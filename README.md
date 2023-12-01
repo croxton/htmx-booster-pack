@@ -71,7 +71,7 @@ Every component must have a unique id. If you reuse a component multiple times i
 The name of your component. No spaces or hyphens, but camelCase is fine. This must match the filename of your component script.
 
 ### data-load
-The loading strategy to use for the component. See [Loading strategies](#Loading strategies) below.
+The loading strategy to use for the component. See [Loading strategies](https://github.com/croxton/htmx-components#loading-strategies) below.
 
 ### data-options
 A JSON formatted string of options to pass to your component.
