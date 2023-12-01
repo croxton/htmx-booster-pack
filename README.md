@@ -9,7 +9,7 @@ https://stackblitz.com/github/croxton/htmx-components
 
 ## But why?
 
-You want to run scripts when content is swapped into the page and not have to worry about how those scripts are initialised or destructed when it is subsequently swapped out. Or what happens to your scripts when you hit the browser's back/forward buttons and htmx restores the page from it's cache. Maybe you could use [_hyperscript](https://github.com/bigskysoftware/_hyperscript) (you should, it's ace!), but sometimes you'll need to reuse behaviour, or orchestrate multiple elements on the page, or use a third party library, or only load different scripts depending on the screen size...
+You want to run scripts when content is swapped into the page and not have to worry about how those scripts are initialised or destructed when it is subsequently swapped out. Or what happens to your scripts when you hit the browser's back/forward buttons and htmx restores the page from it's cache. Maybe you could use [_hyperscript](https://github.com/bigskysoftware/_hyperscript) (you should, it's ace!), but sometimes you'll need to reuse behaviour, or orchestrate multiple elements on the page, or use a third party library, or  load different scripts depending on the screen size... At a certain point you may find [SoC](https://en.wikipedia.org/wiki/Separation_of_concerns) to be more useful than [LoB](https://htmx.org/essays/locality-of-behaviour/) - when that point is reached is entirely up to you!
 
 ## Requirements
 
