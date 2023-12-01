@@ -92,7 +92,7 @@ A JSON formatted string of options to pass to your component.
             "title"  : "My website page",
             "label"  : "Share on",
             "device" : "Share using device sharing",
-            "url"    : "https://mywebsite.com/page3.html"
+            "url"    : "https://mywebsite.com"
         }'
 ></ul>
 ```
