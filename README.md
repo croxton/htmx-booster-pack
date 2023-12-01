@@ -2,7 +2,11 @@
 
 ## Overview
 
-A minimalistic javaScript component framework that works seamlessly with [htmx](https://github.com/bigskysoftware/htmx). No bundler required, all you need is `<script>`.
+A minimalistic JavaScript component framework that works seamlessly with [htmx](https://github.com/bigskysoftware/htmx). No bundler required, all you need is `<script>`.
+
+## But why?
+
+You want to run scripts when content is swapped into the page and not have to worry about how those scripts are initialised or destructed when it is subsequently swapped out. Or what happens to your scripts when you hit the browser's back/forward buttons and htmx restores the page from it's cache. Maybe you could use [_hyperscript](https://github.com/bigskysoftware/_hyperscript) (you should, it's ace!), but sometimes you'll need to reuse behaviour, or orchestrate multiple elements on the page, or use a third party library...
 
 ## Requirements
 
