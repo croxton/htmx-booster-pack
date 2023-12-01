@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Home</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="htmx-components-config" content='{ "basePath" : "/scripts/components/" }'>
+    <link rel="stylesheet" href="/styles/styles.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx/src/htmx.min.js"
+    ></script>
+    <script defer src="/lib/ext/components.js"></script>
+    <script defer src="/lib/ext/history-preserve.js"></script>
+  </head>
+  <body hx-ext="components,history-preserve">
+    <header id="header">
+      <nav
+        hx-boost="true"
+        hx-target="#main"
+        hx-select="#main"
+        hx-swap="outerHTML"
+      >
+        <a href="/">Home</a>
+        <a href="/page2.html">Other page</a>
+      </nav>
+    </header>
+    <main id="main" hx-history-elt>
+      <h1>Home page</h1>
+      <section>
+        <header>
+          <h3>Example htmx component</h3>
+        </header>
+        <div id="message" data-component="hello"></div>
+      </section>
+    </main>
+  </body>
+</html>

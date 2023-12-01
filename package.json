@@ -1,0 +1,28 @@
+{
+  "name": "htmx-components",
+  "version": "1.0.0",
+  "description": "Minimal JS components for htmx",
+  "type": "module",
+  "exports": {
+    "./components": {
+      "import": "./dist/components.min.js"
+    },
+    "./history-preserve": {
+      "import": "./dist/history-preserve.min.js"
+    }
+  },
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^5.0.4"
+  }
+}
