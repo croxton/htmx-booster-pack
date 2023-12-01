@@ -13,8 +13,8 @@ Modern browsers only (sorry IE11!): https://caniuse.com/es6-module-dynamic-impor
 1. Include `components.min.js` and `history-preserve.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
 <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx/src/htmx.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/croxton/htmx-components/dist/components.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/croxton/htmx-components/dist/history-preserve.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-components/dist/components.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-components/dist/history-preserve.min.js"></script>
 ```
 
 2. Create a folder in the webroot of your project to store components, e.g. `/scripts/components/.` Add a `<meta>` tag and set the `basePath` of your folder:
