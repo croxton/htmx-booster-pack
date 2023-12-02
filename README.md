@@ -13,7 +13,8 @@ You want to run scripts when using `hx-boost` or `hx-get` swaps, and not have to
 
 ## Requirements
 
-Modern browsers only (sorry IE11!): https://caniuse.com/es6-module-dynamic-import
+* [htmx](https://github.com/bigskysoftware/htmx)
+* Modern browsers that support [dynamic imports](https://caniuse.com/es6-module-dynamic-import) (sorry IE11!)
 
 ## How to use
 
