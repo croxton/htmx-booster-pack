@@ -105,10 +105,10 @@ Use this attribute if your component alters the `innerHTML` of elements it is mo
 
 ## Component classes
 
-Components are ES6 classes with a default export.
+Components are ES6 module classes that extend the `HtmxComponent` base class. They are imported dynamically on demand and run directly in the browser. If you need to import npm packages you can use CDNs such as [Skypack](https://www.skypack.dev/), [ESM](https://esm.sh) and [Unpkg](https://unpkg.com), or just host the package files in your project.
 
 ### mount() 
-Use this method to initialise your component.
+Use this method to initialise your component logic.
 
 ### unmount()
 Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory. Remove any event listeners and observers that you created. The framework automatically tracks event listeners added to elements and provides a convenience function `clearEventListeners()` that can clean things up for you.
