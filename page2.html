@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Other page</title>
+    <title>Page 2</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="htmx-components-config" content='{ "basePath" : "/scripts/components/" }'>
@@ -19,20 +19,20 @@
         hx-boost="true"
         hx-target="#main"
         hx-select="#main"
-        hx-swap="outerHTML"
+        hx-swap="outerHTML show:#header:top"
       >
         <a href="/">Home</a>
-        <a href="/page2.html">Other page</a>
+        <a href="/page2.html">Page 2</a>
+        <a href="/page3.html">Page 3</a>
       </nav>
     </header>
     <main id="main" hx-history-elt>
-      <h1>My other page</h1>
+      <h1>Page 2</h1>
       <section>
         <header>
-          <h3>Example htmx component</h3>
-          <p class="mt-2">
-            Lazyloaded using the 'visible' strategy - will only be loaded when
-            it enters the viewport.
+          <h2>Example htmx component - passing options</h2>
+          <p>
+            Options can be passed to a component instance with the <code>data-options</code> attribute.
           </p>
         </header>
         <ul
@@ -56,6 +56,7 @@
                 "url"    : "https://mywebsite.com/page3.html"
             }'
         ></ul>
+      </section>
     </main>
   </body>
 </html>

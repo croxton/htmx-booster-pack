@@ -19,17 +19,18 @@
         hx-boost="true"
         hx-target="#main"
         hx-select="#main"
-        hx-swap="outerHTML"
+        hx-swap="outerHTML show:#header:top"
       >
         <a href="/">Home</a>
-        <a href="/page2.html">Other page</a>
+        <a href="/page2.html">Page 2</a>
+        <a href="/page3.html">Page 3</a>
       </nav>
     </header>
     <main id="main" hx-history-elt>
       <h1>Home page</h1>
       <section>
         <header>
-          <h3>Example htmx component</h3>
+          <h2>Example htmx component</h2>
         </header>
         <div id="message" data-component="hello"></div>
       </section>
