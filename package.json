@@ -1,6 +1,6 @@
 {
   "name": "htmx-components",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Minimal component framework for htmx",
   "type": "module",
   "exports": {
