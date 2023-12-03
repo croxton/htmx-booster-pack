@@ -1,4 +1,4 @@
-# Booster pack
+# htmx booster pack
 
 ## Overview
 
