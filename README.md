@@ -137,7 +137,7 @@ Use this method to remove any references to elements in the DOM so that the brow
 <div id="my-thing-1" data-component="myThing" data-options='{"message":"Hello!"}'></div>
 ```
 
-`components/local/myThing.js`:
+`scripts/components/myThing.js`:
 
 ```js
 export default class MyThing extends HtmxComponent {
