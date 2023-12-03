@@ -82,9 +82,9 @@ export default class Hello extends HtmxComponent {
 }
 ```
 
-## Suggested HTML structure with `hx-boost`
+## HTML structure with `hx-boost`
 
-htmx components expects the `hx-target` and `hx-select` to reference a *child element* of `<body>`.
+htmx components expects the `hx-target` and `hx-select` attributes to reference a *child element* of `<body>`.
 
 For example, if you want to boost links in the whole document:
 
