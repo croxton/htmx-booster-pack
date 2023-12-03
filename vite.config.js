@@ -7,8 +7,7 @@ export default defineConfig({
     build: {
         lib: {
             entry: {
-                "components": "./lib/ext/components.js",
-                "history-preserve": "./lib/ext/history-preserve.js",
+                "components": "./lib/ext/components.js"
             },
             formats: ["es"],
             fileName: (format, name) => `${name}.min.js`
