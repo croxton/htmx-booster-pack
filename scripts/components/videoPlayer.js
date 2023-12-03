@@ -40,7 +40,11 @@ export default class VideoPlayer extends HtmxComponent {
         super(elm);
         this.videoMount = document.querySelector(elm);
         this.videoPlayer = this.videoMount.querySelector('.c-video__player');
-        this.mount();
+
+				// load CSS and mount
+				this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
+					this.mount();
+				});
     }
 
     mount() {

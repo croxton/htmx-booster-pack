@@ -133,6 +133,9 @@ Use this method to initialise your component logic.
 ### unmount()
 Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory. Remove any event listeners and observers that you created. The framework automatically tracks event listeners added to elements and provides a convenience function `clearEventListeners()` that can clean things up for you.
 
+### css()
+Since ES6 modules running in the browser can’t dynamically import CSS, this method provides a convenient way to load an array of stylesheets, returning a promise. Stylesheets will only be loaded once no matter how many component instances you have, or which pages they appear on.
+
 ```html
 <div id="my-thing-1" data-component="myThing" data-options='{"message":"Hello!"}'></div>
 ```
@@ -154,7 +157,10 @@ export default class MyThing extends HtmxComponent {
             message: "Hi, I'm thing",
         };
 
-        this.mount();
+	    // load CSS files, then mount
+	    this.css(['myStylesheet.css']).then(() => {
+		    this.mount();
+	    });
     }
 
     mount() {
