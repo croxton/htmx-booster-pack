@@ -173,21 +173,9 @@ h2 {
 .c-video {
   position: relative;
   width: 50%;
-  --ratio: 16/9;
-  background: #999;
-}
-
-.c-video::after {
-  clear: both;
-  content: '';
-  display: block;
-}
-
-.c-video::before {
-  content: '';
-  display: block;
-  float: left;
-  padding-top: calc(100% / (var(--ratio, 1)));
+	overflow: hidden;
+	background: #eeeeee;
+  aspect-ratio: 16/9;
 }
 
 .c-video + .c-video {
