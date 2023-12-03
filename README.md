@@ -18,11 +18,10 @@ You want to run scripts when using `hx-boost` or `hx-get` swaps, and not have to
 
 ## How to use
 
-1. Include `components.min.js` and `history-preserve.min.js` in the `<head>` of your page, right after `htmx`:
+1. Include `components.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
 <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx/src/htmx.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-components/dist/components.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-components/dist/history-preserve.min.js"></script>
 ```
 
 2. Create a folder in the webroot of your project to store components, e.g. `/scripts/components/.` Add a `<meta>` tag and set the `basePath` of your folder:
@@ -32,7 +31,7 @@ You want to run scripts when using `hx-boost` or `hx-get` swaps, and not have to
 
 3. Reference the `components` and `history-preserve` extensions via the `hx-ext` attribute:
 ```html
-<body hx-ext="components,history-preserve">
+<body hx-ext="components">
 ```
 
 4. Attach a component to an html element with the `data-component` attribute.
@@ -98,11 +97,11 @@ A JSON formatted string of options to pass to your component.
 ></ul>
 ```
 
-### data-version
-A versioning string or hash to append to your script for cache-busting.
+### data-reset
+When a component instance is reinitialised on history restore (the user navigates to a page using the browser’s back/forward buttons), the `innerHTML` is automatically reset to its original state, so that your script always has the same markup to work with when it mounts. However, this may not be the desired behaviour when you are appending to the original markup (for example, adding new rows to a table) - in which case you can disable this feature with `data-reset="false"`.
 
-### hx-history-preserve
-Use this attribute if your component alters the `innerHTML` of elements it is mounted on, and you want to restore the initial markup state of the element when the component is reinitialised.
+### data-version
+A versioning string or hash that will be appended to your script, for cache-busting.
 
 ## Component classes
 
