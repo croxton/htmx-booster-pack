@@ -51,7 +51,7 @@ You want to run scripts when using `hx-boost` or `hx-get` swaps, and not have to
 <meta name="htmx-components-config" content='{ "basePath" : "/scripts/components/" }'>
 ```
 
-3. Reference the `components` and `history-preserve` extensions via the `hx-ext` attribute:
+3. Reference the `components` extension with the `hx-ext` attribute:
 ```html
 <body hx-ext="components">
 ```
@@ -61,7 +61,7 @@ You want to run scripts when using `hx-boost` or `hx-get` swaps, and not have to
 <div id="message" data-component="hello"></div>   
 ```
 
-5. Add a script in your components folder with the name of your component:
+5. Add a script in your components folder with the same name as your component, e.g. `hello.js`:
 ```js
 export default class Hello extends HtmxComponent {
   message;
