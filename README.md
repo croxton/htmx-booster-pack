@@ -82,6 +82,24 @@ export default class Hello extends HtmxComponent {
 }
 ```
 
+## Suggested HTML structure with `hx-boost`
+
+htmx components expects the `hx-target` and `hx-select` to reference a *child element* of `<body>`.
+
+For example, if you want to boost links in the whole document:
+
+```html
+<body hx-ext="components" 
+      hx-boost="true"
+      hx-target="#main"
+      hx-select="#main"
+      hx-swap="outerHTML">
+    <main id="main">
+      
+    </main>
+</body>
+```
+
 ## Attributes
 
 ### id
@@ -101,19 +119,19 @@ A JSON formatted string of options to pass to your component.
     id="share-buttons"
     data-component="share"
     data-options='{
-             "share"  : [
-                "device",
-                "linkedin",
-                "facebook",
-                "twitter",
-                "email",
-                "copy"
-            ],
-            "title"  : "My website page",
-            "label"  : "Share on",
-            "device" : "Share using device sharing",
-            "url"    : "https://mywebsite.com"
-        }'
+         "share"  : [
+            "device",
+            "linkedin",
+            "facebook",
+            "twitter",
+            "email",
+            "copy"
+        ],
+        "title"  : "My website page",
+        "label"  : "Share on",
+        "device" : "Share using device sharing",
+        "url"    : "https://mywebsite.com"
+    }'
 ></ul>
 ```
 
@@ -157,10 +175,10 @@ export default class MyThing extends HtmxComponent {
             message: "Hi, I'm thing",
         };
 
-	    // load CSS files, then mount
-	    this.css(['myStylesheet.css']).then(() => {
-		    this.mount();
-	    });
+        // load CSS files, then mount
+        this.css(['myStylesheet.css']).then(() => {
+            this.mount();
+        });
     }
 
     mount() {
