@@ -1,14 +1,11 @@
 {
   "name": "htmx-components",
-  "version": "1.0.0",
-  "description": "Minimal JS components for htmx",
+  "version": "1.0.1",
+  "description": "Minimal component framework for htmx",
   "type": "module",
   "exports": {
-    "./components": {
+    ".": {
       "import": "./dist/components.min.js"
-    },
-    "./history-preserve": {
-      "import": "./dist/history-preserve.min.js"
     }
   },
   "files": [
@@ -19,9 +16,16 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/croxton/htmx-components.git"
+  },
+  "keywords": [
+    "htmx",
+    "components"
+  ],
+  "author": "Mark Croxton",
+  "license": "BSD 2-Clause",
   "devDependencies": {
     "vite": "^5.0.4"
   }

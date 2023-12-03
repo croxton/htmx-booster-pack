@@ -42,8 +42,8 @@ You want to run scripts when using `hx-boost` or `hx-get` swaps, and not have to
 
 1. Include `components.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
-<script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx/src/htmx.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-components/dist/components.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-components@1.0.1/dist/components.min.js"></script>
 ```
 
 2. Create a folder in the webroot of your project to store components, e.g. `/scripts/components/.` Add a `<meta>` tag and set the `basePath` of your folder:
