@@ -1,11 +1,11 @@
-# htmx components
+# Booster pack
 
 ## Overview
 
 A minimalistic component framework that works seamlessly with [htmx](https://github.com/bigskysoftware/htmx) and [hx-boost](https://htmx.org/attributes/hx-boost/). No bundler required, all you need is `<script>`.
 
 You can try it out online with StackBlitz: 
-https://stackblitz.com/github/croxton/htmx-components
+https://stackblitz.com/github/croxton/htmx-booster-pack
 
 ### Add `data-component` attributes to your HTML:
 ```html
@@ -43,7 +43,7 @@ You want to run scripts when using `hx-boost` or `hx-get` swaps, and not have to
 1. Include `components.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
 <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-components@1.0.2/dist/components.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.3/dist/components.min.js"></script>
 ```
 
 2. Create a folder in the webroot of your project to store components, e.g. `/scripts/components/.` Add a `<meta>` tag and set the `basePath` of your folder:
@@ -109,7 +109,7 @@ Every component must have a unique id. If you reuse a component multiple times i
 The name of your component. No spaces or hyphens, but camelCase is fine. This must match the filename of your component script.
 
 ### data-load
-The loading strategy to use for the component. See [Loading strategies](https://github.com/croxton/htmx-components#loading-strategies) below.
+The loading strategy to use for the component. See [Loading strategies](https://github.com/croxton/htmx-booster-pack#loading-strategies) below.
 
 ### data-options
 A JSON formatted string of options to pass to your component.

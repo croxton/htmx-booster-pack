@@ -1,6 +1,6 @@
 {
-  "name": "htmx-components",
-  "version": "1.0.2",
+  "name": "htmx-booster-pack",
+  "version": "1.0.3",
   "description": "Minimal component framework for htmx",
   "type": "module",
   "exports": {
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/croxton/htmx-components.git"
+    "url": "git+https://github.com/croxton/htmx-booster-pack.git"
   },
   "keywords": [
     "htmx",
