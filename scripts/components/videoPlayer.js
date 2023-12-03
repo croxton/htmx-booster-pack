@@ -184,32 +184,30 @@ export default class VideoPlayer extends HtmxComponent {
     }
 
     unmount() {
-        if (this.mounted) {
+        // reset classes on root element
+        this.videoMount.classList.remove('is-ready');
+        this.videoMount.classList.remove('is-active');
+        this.videoMount.classList.remove('is-playing');
 
-            // reset classes on root element
-            this.videoMount.classList.remove('is-ready');
-            this.videoMount.classList.remove('is-active');
-            this.videoMount.classList.remove('is-playing');
+        // remove markup inside video player container
+        this.videoPlayer.innerHTML = null;
 
-            // remove markup inside video player container
-            this.videoPlayer.innerHTML = null;
+        // remove listeners on play button
+        let videoBtn = this.videoMount.querySelector('.c-video__btn');
+        videoBtn.clearEventListeners();
+        videoBtn = null;
 
-            // remove listeners on play button
-            let videoBtn = this.videoMount.querySelector('.c-video__btn');
-            videoBtn.clearEventListeners();
-            videoBtn = null;
+        // remove instance
+        this.playerInstance.destroy();
 
-            // remove instance
-            this.playerInstance.destroy();
+        // unsubscribe
+        PubSub.unsubscribe(this.playerSubscriber);
 
-            // unsubscribe
-            PubSub.unsubscribe(this.playerSubscriber);
+        // reset properties
+        this.videoMount = null;
+        this.videoPlayer = null;
+        this.playerInstance = null;
+        this.playerSubscriber = null;
 
-            // reset properties
-            this.videoMount = null;
-            this.videoPlayer = null;
-            this.playerInstance = null;
-            this.playerSubscriber = null;
-        }
     }
 }

@@ -133,10 +133,8 @@ export default class Share extends HtmxComponent {
   }
 
   unmount() {
-    if (this.mounted) {
-      // remove event listeners and dom references
-      this.shareMount.clearEventListeners();
-      this.shareMount = null;
-    }
+    // remove event listeners and dom references
+    this.shareMount.clearEventListeners();
+    this.shareMount = null;
   }
 }

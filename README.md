@@ -2,10 +2,32 @@
 
 ## Overview
 
-A minimalistic JavaScript component framework that works seamlessly with [htmx](https://github.com/bigskysoftware/htmx). No bundler required, all you need is `<script>`.
+A minimalistic component framework that works seamlessly with [htmx](https://github.com/bigskysoftware/htmx) and [hx-boost](https://htmx.org/attributes/hx-boost/). No bundler required, all you need is `<script>`.
 
 You can try it out online with StackBlitz: 
 https://stackblitz.com/github/croxton/htmx-components
+
+### Add `data-component` attributes to your HTML:
+```html
+<div id="celebrate" data-component="celebrate"></div>
+```
+
+### Write a component class and bring it to life:
+```js
+import confetti from 'https://cdn.skypack.dev/canvas-confetti';
+export default class Celebrate extends HtmxComponent {
+  constructor(elm) {
+    super(elm);
+    this.mount();
+  }
+  mount() {
+    confetti();
+  }
+  unmount() {
+    confetti.reset();
+  }
+}
+```
 
 ## But why?
 
@@ -55,9 +77,7 @@ export default class Hello extends HtmxComponent {
   }
 
   unmount() {
-    if (this.mounted) {
-      this.message = null;
-    }
+    this.message = null;
   }
 }
 ```
@@ -152,17 +172,15 @@ export default class MyThing extends HtmxComponent {
     }
 
     unmount() {
-        if (this.mounted) {
-          // remove any event listeners you created
-          this.thing.clearEventListeners();
+      // remove any event listeners you created
+      this.thing.clearEventListeners();
 
-          // remove any observers you connected
-          this.thingObserver.disconnect();
-          this.thingObserver = null;
+      // remove any observers you connected
+      this.thingObserver.disconnect();
+      this.thingObserver = null;
 
-          // unset any references to DOM nodes
-          this.thing = null;
-        }
+      // unset any references to DOM nodes
+      this.thing = null;
     }
 }
 ```
