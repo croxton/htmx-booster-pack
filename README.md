@@ -84,7 +84,7 @@ export default class Hello extends HtmxComponent {
 
 ## HTML structure with `hx-boost`
 
-htmx components expects the `hx-target` and `hx-select` attributes to reference a *child element* of `<body>`.
+htmx components expects the `hx-target` and `hx-select` attributes to reference a *child element* of `<body>`. This should always be the [hx-history-elt](https://htmx.org/attributes/hx-history-elt/) element.
 
 For example, if you want to boost links in the whole document:
 
@@ -94,13 +94,13 @@ For example, if you want to boost links in the whole document:
       hx-target="#main"
       hx-select="#main"
       hx-swap="outerHTML">
-    <main id="main">
-      
+    <main id="main" hx-history-elt>
+      [Content that gets swapped]
     </main>
 </body>
 ```
 
-## Attributes
+## Component attributes
 
 ### id
 Every component must have a unique id. If you reuse a component multiple times in the same document, make sure all have unique id attributes.
