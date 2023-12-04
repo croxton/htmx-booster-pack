@@ -219,10 +219,6 @@ Retrieve state from the specified scope, optionally passing an object with a set
 let currentState = this.getState('component', { a: null, b:null });
 ```
 
-```html
-<div id="my-thing-1" data-booster="myThing" data-options='{"message":"Hello!"}'></div>
-```
-
 #### stateChange(changes)
 Called by the `setState` method, with any changes to state passed as an object and intended to be overridden in your class. This can optionally be used to perform all DOM manipulation within a single function. Note that this can only be used with state changes in the `local` scope.
 
@@ -242,6 +238,13 @@ this.destroyState('component');
 
 ### Example class
 
+
+#### html
+```html
+<div id="my-thing-1" data-booster="myThing" data-options='{"message":"Hello!"}'></div>
+```
+
+#### js
 ```js
 export default class MyThing extends Booster {
 
