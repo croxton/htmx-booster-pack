@@ -2,7 +2,7 @@
 
 ### A minimalistic component framework for htmx.
 
-Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a muddle when trying to (re)instantiate and destruct scripts, particularly when it comes to history navigation. This tiny framework provides a simple component lifecycle to wrap your logic in - so you can load scripts on demand rather than up-front, and avoid memory leaks. No bundler required, all you need is `<script>`.
+Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a muddle when trying to (re)instantiate and destruct scripts, particularly when it comes to history navigation. This tiny framework provides a simple component lifecycle to wrap your logic in; this allows you to load scripts on demand rather than up-front, and avoid memory leaks. No bundler required, all you need is `<script>`.
 
 You can try it out online with StackBlitz: 
 https://stackblitz.com/github/croxton/htmx-booster-pack
@@ -46,7 +46,7 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 <script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.4/dist/booster.min.js"></script>
 ```
 
-2. Create a folder in the webroot of your project to store components, e.g. `/scripts/boosts/.` Add a `<meta>` tag and set the `basePath` of your folder:
+2. Create a folder in the webroot of your project to store your scripts, e.g. `/scripts/boosts/`. Add a `<meta>` tag and set the `basePath` of your folder:
 ```html
 <meta name="booster-config" content='{ "basePath" : "/scripts/boosts/" }'>
 ```
@@ -56,12 +56,12 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 <body hx-ext="booster">
 ```
 
-4. Attach a component to an html element with the `data-booster` attribute.
+4. Attach a script to an html element with the `data-booster` attribute.
 ```html
 <div id="message" data-booster="hello"></div>   
 ```
 
-5. Add a script in your folder with the same name, e.g. `hello.js`:
+5. Add a script in the `basePath` folder with the same name, e.g. `hello.js`:
 ```js
 export default class Hello extends Booster {
   message;
@@ -84,7 +84,7 @@ export default class Hello extends Booster {
 
 ## HTML structure with `hx-boost`
 
-Booster Pack expects the `hx-target` and `hx-select` attributes to reference a *child element* of `<body>`. This should always be the [hx-history-elt](https://htmx.org/attributes/hx-history-elt/) element.
+Booster Pack expects the `hx-target` and `hx-select` attributes to reference a *child element* of `<body>`. This would usually also be the [hx-history-elt](https://htmx.org/attributes/hx-history-elt/) element used for history restores.
 
 For example, if you want to boost links in the whole document:
 
@@ -103,13 +103,13 @@ For example, if you want to boost links in the whole document:
 ## Attributes
 
 ### id
-Every component must have a unique id. If you reuse a component multiple times in the same document, make sure all have unique id attributes.
+Every component instance must have a unique id. If you reuse a component multiple times in the same document, make sure all have unique id attributes.
 
 ### data-booster
 The name of your component. No spaces or hyphens, but camelCase is fine. This must match the filename of your script.
 
 ### data-load
-The loading strategy to use for the component. See [Loading strategies](https://github.com/croxton/htmx-booster-pack#loading-strategies) below.
+The loading strategy to use for the component instance. See [Loading strategies](https://github.com/croxton/htmx-booster-pack#loading-strategies) below.
 
 ### data-options
 A JSON formatted string of options to pass to your component.
@@ -145,20 +145,100 @@ A versioning string or hash that will be appended to your script, for cache-bust
 
 Components are ES6 module classes that extend the `BoosterPack` base class. They are imported dynamically on demand and run directly in the browser. If you need to import npm packages you can use CDNs such as [Skypack](https://www.skypack.dev/), [ESM](https://esm.sh) and [Unpkg](https://unpkg.com), or just host the package files in your project.
 
-### mount() 
+### Properties
+
+### elm 
+`{string}` A query selector for the element the component is attached to, e.g. `#my-element`.
+
+### options
+`{array}` Variable holding options of the component. Default options can be set in the constructor. Options get automatically rewritten from the `data-options` attribute, which should be passed a JSON formatted string.
+
+```html
+<div id="my-thing-1" data-booster="myThing" data-options='{"option1":"value1","option2":"value2"}'>
+```
+```js
+constructor() {
+    this.options = {
+        option1: "default value",
+        anotherOption: "default value",
+    };
+    console.log(this.options); // {"anotherOption":"default value","option1":"value1","option2":"value2"}
+}
+```
+
+### Methods
+
+#### mount() 
 Use this method to initialise your component logic.
 
-### unmount()
+```js
+    mount() {
+      this.instance = document.querySelector(this.elm);
+      confetti();
+    }
+````
+
+#### unmount()
 Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory. Remove any event listeners and observers that you created. The framework automatically tracks event listeners added to elements and provides a convenience function `clearEventListeners()` that can clean things up for you.
 
-### css()
-Since ES6 modules running in the browser can’t dynamically import CSS, this method provides a convenient way to load an array of stylesheets, returning a promise. Stylesheets will only be loaded once no matter how many component instances you have, or which pages they appear on.
+```js
+    unmount() {
+      this.instance = null;
+      confetti.reset();
+    }
+````
+
+#### css(urls)
+Since ES6 modules running in the browser can’t dynamically import CSS, this method provides a convenient way to load an array of stylesheet URLs, returning a promise. Stylesheets will only be loaded once no matter how many component instances you have, or which pages they appear on.
+
+```js
+this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
+  this.mount();
+});
+```
+
+#### setState(scope, changes)
+Method called to update state. Only changes of state are required to be passed in a form of an object, and these will be merged with current state. Objects stored in state can be scoped as follows:
+
+* `local`: only known to the component instance
+* `component`: shared by all instances of the same class, allowing them to communicate.
+* `global`: shared by all components globally (use with caution!)
+
+```js
+this.setState('local', {
+  a: "a"
+});
+```
+
+#### getState(scope, defaults)
+Retrieve state from the specified scope, optionally passing an object with a set of default values.
+
+```js
+let currentState = this.getState('component', { a: null, b:null });
+```
 
 ```html
 <div id="my-thing-1" data-booster="myThing" data-options='{"message":"Hello!"}'></div>
 ```
 
-`scripts/components/myThing.js`:
+#### stateChange(changes)
+Called by the `setState` method, with any changes to state passed as an object and intended to be overridden in your class. This can optionally be used to perform all DOM manipulation within a single function. Note that this can only be used with state changes in the `local` scope.
+
+```js
+stateChange(stateChanges) {
+    if('a' in stateChanges) {
+        // "a" was updated
+    }
+}
+```
+
+#### destroyState(scope)
+Reset state in the given scope. If you have used state, call this in the `unmount()` method of your class.
+```js
+this.destroyState('component');
+```
+
+### Example class
 
 ```js
 export default class MyThing extends Booster {
@@ -192,7 +272,6 @@ export default class MyThing extends Booster {
     });
 
     this.thingObserver = new IntersectionObserver(...);
-
   }
 
   unmount() {
@@ -252,3 +331,11 @@ Strategies can be combined by separating with a pipe |, allowing for advanced an
 ```html
 <div id="my-thing-1" data-booster="myThing" data-load="idle | visible | media (min-width: 1024px)"></div>
 ```
+
+
+## Thank you
+
+Inspired by:
+
+* [Async Alpine](https://github.com/Accudio/async-alpine)
+* [Gia](https://github.com/giantcz/gia)
