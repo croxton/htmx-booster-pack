@@ -84,7 +84,7 @@ export default class Hello extends Booster {
 
 ## HTML structure with `hx-boost`
 
-Booster Pack expects the `hx-target` and `hx-select` attributes to reference a *child element* of `<body>`. This would usually also be the [hx-history-elt](https://htmx.org/attributes/hx-history-elt/) element used for history restores.
+Booster Pack expects the `hx-target` and `hx-select` attributes to be specified with `hx-boost`, and to reference a *child element* of `<body>` with an ID of `main`. This would usually also be the [hx-history-elt](https://htmx.org/attributes/hx-history-elt/) element used for history restores.
 
 For example, if you want to boost links in the whole document:
 
@@ -95,10 +95,31 @@ For example, if you want to boost links in the whole document:
       hx-select="#main"
       hx-swap="outerHTML">
     <main id="main" hx-history-elt>
-      [Content that gets swapped]
+        [Content that gets swapped]
     </main>
 </body>
 ```
+
+Alternatively, to only boost selected links, inside or outside of the swap target:
+```html
+<body hx-ext="booster">
+    <header id="header">
+        <nav
+            hx-boost="true"
+            hx-target="#main"
+            hx-select="#main"
+            hx-swap="outerHTML">
+            <a href="/">Home</a>
+            <a href="/page2.html">Page 2</a>
+            <a href="/page3.html">Page 3</a>
+        </nav>
+    </header>
+    <main id="main" hx-history-elt>
+        [Content that gets swapped]
+    </main>
+</body>
+```
+
 
 ## Attributes
 
@@ -204,7 +225,7 @@ Method called to update state. Only changes of state are required to be passed i
 * `component`: shared by all instances of the same class, allowing them to communicate.
 * `global`: shared by all components globally.
 
-Use the `component` and `global` scopes with caution: sharing scope has the potential to introduce memory leaks if you store large objects, references to dom nodes or forget to destroy state in `unmount()`.
+Use the `component` and `global` scopes with caution: sharing state has the potential to introduce memory leaks if you store large objects, references to dom nodes that get swapped out, or forget to destroy state in `unmount()`.
 
 ```js
 this.setState('local', {
