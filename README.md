@@ -172,20 +172,20 @@ constructor() {
 Use this method to initialise your component logic.
 
 ```js
-    mount() {
-      this.instance = document.querySelector(this.elm);
-      confetti();
-    }
+mount() {
+  this.instance = document.querySelector(this.elm);
+  confetti();
+}
 ````
 
 #### unmount()
 Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory. Remove any event listeners and observers that you created, and destroy state if you set it. The framework automatically tracks event listeners added to elements and provides a convenience function `clearEventListeners()` that can clean things up for you.
 
 ```js
-    unmount() {
-      this.instance = null;
-      confetti.reset();
-    }
+unmount() {
+  this.instance = null;
+  confetti.reset();
+}
 ````
 
 #### css(urls)
