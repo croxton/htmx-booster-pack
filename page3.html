@@ -1,73 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+	<head>
     <title>Page 3</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="htmx-components-config" content='{ "basePath" : "/scripts/components/" }'>
     <link rel="stylesheet" href="/styles/styles.css" />
-    <script
-        defer
-        src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"
-    ></script>
+    <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
     <script defer src="/lib/ext/components.js"></script>
-</head>
-<body hx-ext="components">
-<header id="header">
-    <nav
+	</head>
+	<body hx-ext="components">
+		<header id="header">
+	    <nav
         hx-boost="true"
         hx-target="#main"
         hx-select="#main"
         hx-swap="outerHTML show:#header:top"
-    >
+	    >
         <a href="/">Home</a>
         <a href="/page2.html">Page 2</a>
         <a href="/page3.html">Page 3</a>
-    </nav>
-</header>
-<main id="main" hx-history-elt>
-    <h1>Page 3</h1>
-    <section>
-        <header>
-            <h2>Example htmx component: Video Player</h2>
-            <p>
-                Plyr and PubSub npm packages imported via <a href="https://www.skypack.dev/">Skypack CDN</a>.
-            <p>
-                Lazyloaded using the 'visible' strategy - will only be loaded when
-                it enters the viewport.
-            </p>
-        </header>
+	    </nav>
+		</header>
+		<main id="main" hx-history-elt>
+			<h1>Page 3</h1>
+			<section>
+		    <header>
+		      <h2>Example htmx component: Video Player</h2>
+		      <p>
+		        Plyr and PubSub npm packages imported via <a href="https://www.skypack.dev/">Skypack CDN</a>.
+		      <p>
+		        Lazyloaded using the 'visible' strategy - will only be loaded when
+		        it enters the viewport.
+		      </p>
+		    </header>
 
-        <div id="video-1" class="c-video" data-component="videoPlayer" data-load="visible">
-            <div class="c-video__poster">
-                <img
-                    src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg"
-                    alt="">
-            </div>
-            <button class="c-video__btn">
-                <span>Play</span>
-            </button>
-            <div class="c-video__player"
-                 data-src-mp4="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            >
-            </div>
-        </div>
+		    <div id="video-1" class="c-video" data-component="videoPlayer" data-load="visible">
+		      <div class="c-video__poster">
+		        <img
+		            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg"
+		            alt="">
+		      </div>
+		        <button class="c-video__btn">
+		          <span>Play</span>
+		        </button>
+		        <div class="c-video__player"
+		             data-src-mp4="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+		        >
+		        </div>
+		    </div>
 
-        <div id="video-2" class="c-video" data-component="videoPlayer" data-load="visible">
-            <div class="c-video__poster">
-                <img
-                    src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
-                    alt="">
-            </div>
-            <button class="c-video__btn">
-                <span>Play</span>
-            </button>
-            <div class="c-video__player"
-                 data-src-mp4="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-            >
-            </div>
-        </div>
-    </section>
-</main>
-</body>
+		    <div id="video-2" class="c-video" data-component="videoPlayer" data-load="visible">
+	        <div class="c-video__poster">
+            <img
+              src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+              alt="">
+	        </div>
+	        <button class="c-video__btn">
+	          <span>Play</span>
+	        </button>
+	        <div class="c-video__player"
+	             data-src-mp4="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+	        >
+	        </div>
+		    </div>
+			</section>
+		</main>
+		</body>
 </html>
