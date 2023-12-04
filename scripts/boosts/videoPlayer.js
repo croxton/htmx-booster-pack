@@ -207,10 +207,5 @@ export default class VideoPlayer extends Booster {
     this.videoMount = null;
     this.videoPlayer = null;
     this.playerInstance = null;
-    //this.playerSubscriber = null;
-  }
-
-  stateChange(stateChanges, originalState) {
-    //console.log(stateChanges);
   }
 }
