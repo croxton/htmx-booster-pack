@@ -7,12 +7,12 @@ Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with manag
 You can try it out online with StackBlitz: 
 https://stackblitz.com/github/croxton/htmx-booster-pack
 
-### Add `data-component` attributes to your HTML:
+#### Add `data-component` attributes to your HTML:
 ```html
 <div id="celebrate" data-component="celebrate"></div>
 ```
 
-### Write a component class and bring it to life:
+#### Write a component class and bring it to life:
 ```js
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 export default class Celebrate extends HtmxComponent {
