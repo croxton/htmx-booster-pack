@@ -204,7 +204,7 @@ Method called to update state. Only changes of state are required to be passed i
 * `component`: shared by all instances of the same class, allowing them to communicate.
 * `global`: shared by all components globally.
 
-Use the `component` amd `global` scopes with caution: sharing scope has the potential to introduce memory leaks if you store large objects, references to dom nodes or forget to destroy state in `unmount()`.
+Use the `component` and `global` scopes with caution: sharing scope has the potential to introduce memory leaks if you store large objects, references to dom nodes or forget to destroy state in `unmount()`.
 
 ```js
 this.setState('local', {
@@ -216,7 +216,7 @@ this.setState('local', {
 Retrieve state from the specified scope, optionally passing an object with a set of default values.
 
 ```js
-let currentState = this.getState('component', { a: null, b:null });
+let currentState = this.getState('component', { a:null, b:null });
 ```
 
 #### stateChange(changes)
