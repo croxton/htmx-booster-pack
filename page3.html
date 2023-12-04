@@ -4,12 +4,12 @@
     <title>Page 3</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="htmx-components-config" content='{ "basePath" : "/scripts/components/" }'>
+    <meta name="booster-config" content='{ "basePath" : "/scripts/boosts/" }'>
     <link rel="stylesheet" href="/styles/styles.css" />
     <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-    <script defer src="/lib/ext/components.js"></script>
+    <script defer src="/lib/ext/booster.js"></script>
   </head>
-  <body hx-ext="components">
+  <body hx-ext="booster">
     <header id="header">
       <nav
         hx-boost="true"
@@ -35,7 +35,7 @@
           </p>
         </header>
 
-        <div id="video-1" class="c-video" data-component="videoPlayer" data-load="visible">
+        <div id="video-1" class="c-video" data-booster="videoPlayer" data-load="visible">
           <div class="c-video__poster">
             <img
                 src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg"
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div id="video-2" class="c-video" data-component="videoPlayer" data-load="visible">
+        <div id="video-2" class="c-video" data-booster="videoPlayer" data-load="visible">
           <div class="c-video__poster">
             <img
               src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"

@@ -2,20 +2,20 @@
 
 ### A minimalistic component framework for htmx.
 
-Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a muddle when trying to (re)instantiate and destruct scripts, particularly when it comes to history navigation. This tiny framework provides a simple component lifecycle to wrap your logic in, so you can load scripts on demand rather than up-front and avoid memory leaks. No bundler required, all you need is `<script>`.
+Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a muddle when trying to (re)instantiate and destruct scripts, particularly when it comes to history navigation. This tiny framework provides a simple component lifecycle to wrap your logic in - so you can load scripts on demand rather than up-front, and avoid memory leaks. No bundler required, all you need is `<script>`.
 
 You can try it out online with StackBlitz: 
 https://stackblitz.com/github/croxton/htmx-booster-pack
 
-#### Add `data-component` attributes to your HTML:
+#### Add `data-booster` attributes to your HTML:
 ```html
-<div id="celebrate" data-component="celebrate"></div>
+<div id="celebrate" data-booster="celebrate"></div>
 ```
 
-#### Write a component class and bring it to life:
+#### Write a class and bring it to life:
 ```js
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
-export default class Celebrate extends HtmxComponent {
+export default class Celebrate extends Booster {
   constructor(elm) {
     super(elm);
     this.mount();
@@ -40,30 +40,30 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 
 ## How to use
 
-1. Include `components.min.js` in the `<head>` of your page, right after `htmx`:
+1. Include `booster.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
 <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.3/dist/components.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.4/dist/booster.min.js"></script>
 ```
 
-2. Create a folder in the webroot of your project to store components, e.g. `/scripts/components/.` Add a `<meta>` tag and set the `basePath` of your folder:
+2. Create a folder in the webroot of your project to store components, e.g. `/scripts/boosts/.` Add a `<meta>` tag and set the `basePath` of your folder:
 ```html
-<meta name="htmx-components-config" content='{ "basePath" : "/scripts/components/" }'>
+<meta name="booster-config" content='{ "basePath" : "/scripts/boosts/" }'>
 ```
 
-3. Reference the `components` extension with the `hx-ext` attribute:
+3. Reference the `booster` extension with the `hx-ext` attribute:
 ```html
-<body hx-ext="components">
+<body hx-ext="booster">
 ```
 
-4. Attach a component to an html element with the `data-component` attribute.
+4. Attach a component to an html element with the `data-booster` attribute.
 ```html
-<div id="message" data-component="hello"></div>   
+<div id="message" data-booster="hello"></div>   
 ```
 
-5. Add a script in your components folder with the same name as your component, e.g. `hello.js`:
+5. Add a script in your folder with the same name, e.g. `hello.js`:
 ```js
-export default class Hello extends HtmxComponent {
+export default class Hello extends Booster {
   message;
 
   constructor(elm) {
@@ -84,12 +84,12 @@ export default class Hello extends HtmxComponent {
 
 ## HTML structure with `hx-boost`
 
-htmx components expects the `hx-target` and `hx-select` attributes to reference a *child element* of `<body>`. This should always be the [hx-history-elt](https://htmx.org/attributes/hx-history-elt/) element.
+Booster Pack expects the `hx-target` and `hx-select` attributes to reference a *child element* of `<body>`. This should always be the [hx-history-elt](https://htmx.org/attributes/hx-history-elt/) element.
 
 For example, if you want to boost links in the whole document:
 
 ```html
-<body hx-ext="components" 
+<body hx-ext="booster" 
       hx-boost="true"
       hx-target="#main"
       hx-select="#main"
@@ -100,13 +100,13 @@ For example, if you want to boost links in the whole document:
 </body>
 ```
 
-## Component attributes
+## Attributes
 
 ### id
 Every component must have a unique id. If you reuse a component multiple times in the same document, make sure all have unique id attributes.
 
-### data-component
-The name of your component. No spaces or hyphens, but camelCase is fine. This must match the filename of your component script.
+### data-booster
+The name of your component. No spaces or hyphens, but camelCase is fine. This must match the filename of your script.
 
 ### data-load
 The loading strategy to use for the component. See [Loading strategies](https://github.com/croxton/htmx-booster-pack#loading-strategies) below.
@@ -117,7 +117,7 @@ A JSON formatted string of options to pass to your component.
 ```html
 <ul
     id="share-buttons"
-    data-component="share"
+    data-booster="share"
     data-options='{
          "share"  : [
             "device",
@@ -141,9 +141,9 @@ When a component instance is reinitialised on history restore (the user navigate
 ### data-version
 A versioning string or hash that will be appended to your script, for cache-busting.
 
-## Component classes
+## The `BoosterPack` class
 
-Components are ES6 module classes that extend the `HtmxComponent` base class. They are imported dynamically on demand and run directly in the browser. If you need to import npm packages you can use CDNs such as [Skypack](https://www.skypack.dev/), [ESM](https://esm.sh) and [Unpkg](https://unpkg.com), or just host the package files in your project.
+Components are ES6 module classes that extend the `BoosterPack` base class. They are imported dynamically on demand and run directly in the browser. If you need to import npm packages you can use CDNs such as [Skypack](https://www.skypack.dev/), [ESM](https://esm.sh) and [Unpkg](https://unpkg.com), or just host the package files in your project.
 
 ### mount() 
 Use this method to initialise your component logic.
@@ -155,57 +155,57 @@ Use this method to remove any references to elements in the DOM so that the brow
 Since ES6 modules running in the browser can’t dynamically import CSS, this method provides a convenient way to load an array of stylesheets, returning a promise. Stylesheets will only be loaded once no matter how many component instances you have, or which pages they appear on.
 
 ```html
-<div id="my-thing-1" data-component="myThing" data-options='{"message":"Hello!"}'></div>
+<div id="my-thing-1" data-booster="myThing" data-options='{"message":"Hello!"}'></div>
 ```
 
 `scripts/components/myThing.js`:
 
 ```js
-export default class MyThing extends HtmxComponent {
-    
-    thing;
-    thingObserver;
-    
-    constructor(elm) {
-        super(elm);
-        
-        // default options here are merged with those set on the element
-        // with data-options='{"option1":"value1"}'
-        this.options = {
-            message: "Hi, I'm thing",
-        };
+export default class MyThing extends Booster {
 
-        // load CSS files, then mount
-        this.css(['myStylesheet.css']).then(() => {
-            this.mount();
-        });
-    }
+  thing;
+  thingObserver;
 
-    mount() {
-        // setup and mount your component instance
-        this.thing = document.querySelector(this.elm);
-      
-        // do amazing things...
-        this.thing.addEventListener("click", (e) => {
-            e.preventDefault();
-            console.log(this.options.message); // "Hello!"
-        });
+  constructor(elm) {
+    super(elm);
 
-        this.thingObserver = new IntersectionObserver(...);
-        
-    }
+    // default options here are merged with those set on the element
+    // with data-options='{"option1":"value1"}'
+    this.options = {
+      message: "Hi, I'm thing",
+    };
 
-    unmount() {
-      // remove any event listeners you created
-      this.thing.clearEventListeners();
+    // load CSS files, then mount
+    this.css(['myStylesheet.css']).then(() => {
+      this.mount();
+    });
+  }
 
-      // remove any observers you connected
-      this.thingObserver.disconnect();
-      this.thingObserver = null;
+  mount() {
+    // setup and mount your component instance
+    this.thing = document.querySelector(this.elm);
 
-      // unset any references to DOM nodes
-      this.thing = null;
-    }
+    // do amazing things...
+    this.thing.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log(this.options.message); // "Hello!"
+    });
+
+    this.thingObserver = new IntersectionObserver(...);
+
+  }
+
+  unmount() {
+    // remove any event listeners you created
+    this.thing.clearEventListeners();
+
+    // remove any observers you connected
+    this.thingObserver.disconnect();
+    this.thingObserver = null;
+
+    // unset any references to DOM nodes
+    this.thing = null;
+  }
 }
 ```
 
@@ -220,7 +220,7 @@ The default strategy if not specified. If the component is present in the page o
 Components can listen for an event on `document.body` to be triggered before they are loaded. Pass the event name in parentheses.
 
 ```html
-<div id="my-thing-1" data-component="myThing" data-load="event (htmx:validation:validate)"></div>
+<div id="my-thing-1" data-booster="myThing" data-load="event (htmx:validation:validate)"></div>
 ```
 
 #### Idle
@@ -229,26 +229,26 @@ Uses `requestIdleCallback` (where supported) to load when the main thread is les
 Best used for components that aren’t critical to the initial paint/load.
 
 ```html
-<div id="my-thing-1" data-component="myThing" data-load="idle"></div>
+<div id="my-thing-1" data-booster="myThing" data-load="idle"></div>
 ```
 
 #### Media
 The component will be loaded when the provided media query evaluates as true.
 
 ```html
-<div id="my-thing-1" data-component="myThing" data-load="media (max-width: 820px)"></div>
+<div id="my-thing-1" data-booster="myThing" data-load="media (max-width: 820px)"></div>
 ```
 
 #### Visible
 Uses IntersectionObserver to only load when the component is in view, similar to lazy-loading images. Optionally, custom root margins can be provided in parentheses.
 
 ```html
-<div id="my-thing-1" data-component="myThing" data-load="visible (100px 100px 100px 100px)"></div>
+<div id="my-thing-1" data-booster="myThing" data-load="visible (100px 100px 100px 100px)"></div>
 ```
 
 #### Combined strategies
 Strategies can be combined by separating with a pipe |, allowing for advanced and complex code splitting. All strategies must resolve to trigger loading of the component.
 
 ```html
-<div id="my-thing-1" data-component="myThing" data-load="idle | visible | media (min-width: 1024px)"></div>
+<div id="my-thing-1" data-booster="myThing" data-load="idle | visible | media (min-width: 1024px)"></div>
 ```

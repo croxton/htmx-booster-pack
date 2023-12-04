@@ -8,7 +8,7 @@
 /**
  * Example markup
  *
- <div class="c-video" data-component="videoPlayer" id="video-1">
+ <div class="c-video" data-booster="videoPlayer" id="video-1">
    <!-- Poster image -->
    <img
       class="c-video__poster"
@@ -28,7 +28,7 @@
 
 import Plyr from 'https://cdn.skypack.dev/plyr';
 
-export default class VideoPlayer extends HtmxComponent {
+export default class VideoPlayer extends Booster {
 
   videoMount = null;
   videoPlayer = null;

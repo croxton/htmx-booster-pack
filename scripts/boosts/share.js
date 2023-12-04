@@ -1,4 +1,4 @@
-export default class Share extends HtmxComponent {
+export default class Share extends Booster {
   shareMount;
 
   constructor(elm) {

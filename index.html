@@ -4,12 +4,12 @@
     <title>Home</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="htmx-components-config" content='{ "basePath" : "/scripts/components/" }'>
+    <meta name="booster-config" content='{ "basePath" : "/scripts/boosts/" }'>
     <link rel="stylesheet" href="/styles/styles.css" />
     <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-    <script defer src="/lib/ext/components.js"></script>
+    <script defer src="/lib/ext/booster.js"></script>
   </head>
-  <body hx-ext="components">
+  <body hx-ext="booster">
     <header id="header">
       <nav
         hx-boost="true"
@@ -28,7 +28,7 @@
         <header>
           <h2>Example htmx component: Celebrate</h2>
         </header>
-        <div id="celebrate" data-component="celebrate" data-options='{"message":"Hello, stranger!"}'></div>
+        <div id="celebrate" data-booster="celebrate" data-options='{"message":"Hello, stranger!"}'></div>
       </section>
     </main>
   </body>

@@ -7,7 +7,7 @@ export default defineConfig({
     build: {
         lib: {
             entry: {
-                "components": "./lib/ext/components.js"
+                "booster": "./lib/ext/booster.js"
             },
             formats: ["es"],
             fileName: (format, name) => `${name}.min.js`

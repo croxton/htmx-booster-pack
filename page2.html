@@ -4,12 +4,12 @@
     <title>Page 2</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="htmx-components-config" content='{ "basePath" : "/scripts/components/" }'>
+    <meta name="booster-config" content='{ "basePath" : "/scripts/boosts/" }'>
     <link rel="stylesheet" href="/styles/styles.css" />
     <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-    <script defer src="/lib/ext/components.js"></script>
+    <script defer src="/lib/ext/booster.js"></script>
   </head>
-  <body hx-ext="components">
+  <body hx-ext="booster">
     <header id="header">
       <nav
         hx-boost="true"
@@ -34,7 +34,7 @@
         <ul
           id="share-buttons"
           class="o-share flex space-x-2"
-          data-component="share"
+          data-booster="share"
           data-load="visible"
           data-options='{
                  "share"  : [

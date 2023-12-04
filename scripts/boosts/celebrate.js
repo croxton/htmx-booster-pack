@@ -1,6 +1,6 @@
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
-export default class Celebrate extends HtmxComponent {
+export default class Celebrate extends Booster {
 
   message;
 
