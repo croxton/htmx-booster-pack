@@ -141,9 +141,9 @@ When a component instance is reinitialised on history restore (the user navigate
 ### data-version
 A versioning string or hash that will be appended to your script, for cache-busting.
 
-## The `BoosterPack` class
+## The `Booster` class
 
-Components are ES6 module classes that extend the `BoosterPack` base class. They are imported dynamically on demand and run directly in the browser. If you need to import npm packages you can use CDNs such as [Skypack](https://www.skypack.dev/), [ESM](https://esm.sh) and [Unpkg](https://unpkg.com), or just host the package files in your project.
+Components are ES6 module classes that extend the `Booster` base class. They are imported dynamically on demand and run directly in the browser. If you need to import npm packages you can use CDNs such as [Skypack](https://www.skypack.dev/), [ESM](https://esm.sh) and [Unpkg](https://unpkg.com), or just host the package files in your project.
 
 ### Properties
 
@@ -179,7 +179,7 @@ Use this method to initialise your component logic.
 ````
 
 #### unmount()
-Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory. Remove any event listeners and observers that you created. The framework automatically tracks event listeners added to elements and provides a convenience function `clearEventListeners()` that can clean things up for you.
+Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory. Remove any event listeners and observers that you created, and destroy state if you set it. The framework automatically tracks event listeners added to elements and provides a convenience function `clearEventListeners()` that can clean things up for you.
 
 ```js
     unmount() {
@@ -333,7 +333,6 @@ Strategies can be combined by separating with a pipe |, allowing for advanced an
 ```html
 <div id="my-thing-1" data-booster="myThing" data-load="idle | visible | media (min-width: 1024px)"></div>
 ```
-
 
 ## Thank you
 
