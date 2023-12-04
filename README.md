@@ -200,9 +200,11 @@ this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
 #### setState(scope, changes)
 Method called to update state. Only changes of state are required to be passed in a form of an object, and these will be merged with current state. Objects stored in state can be scoped as follows:
 
-* `local`: only known to the component instance
+* `local`: only known to the component instance.
 * `component`: shared by all instances of the same class, allowing them to communicate.
-* `global`: shared by all components globally (use with caution!)
+* `global`: shared by all components globally.
+
+Use the `component` amd `global` scopes with caution: sharing scope has the potential to introduce memory leaks if you store large objects, references to dom nodes or forget to destroy state in `unmount()`.
 
 ```js
 this.setState('local', {
