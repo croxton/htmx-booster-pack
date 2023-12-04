@@ -1,8 +1,8 @@
-# htmx booster pack
+# Booster Pack
 
-## Overview
+### A minimalistic component framework for htmx.
 
-A minimalistic component framework that works seamlessly with [htmx](https://github.com/bigskysoftware/htmx) and [hx-boost](https://htmx.org/attributes/hx-boost/). No bundler required, all you need is `<script>`.
+Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a muddle when trying to (re)instantiate and destruct scripts, particularly when it comes to history navigation. This tiny framework provides a simple component lifecycle to wrap your logic in, so you can load scripts on demand rather than up-front and avoid memory leaks. No bundler required, all you need is `<script>`.
 
 You can try it out online with StackBlitz: 
 https://stackblitz.com/github/croxton/htmx-booster-pack
