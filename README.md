@@ -31,7 +31,7 @@ export default class Celebrate extends HtmxComponent {
 
 ## But why?
 
-You want to run scripts when using `hx-boost` or `hx-get` swaps, and not have to worry about how those scripts are initialised or destructed when the page fragment is subsequently swapped out. Or what happens to your scripts when you hit the browser's back/forward buttons and htmx restores the page from it's cache. Maybe you could use [_hyperscript](https://github.com/bigskysoftware/_hyperscript) (you should, it's ace!), but sometimes you'll need to reuse behaviour, or orchestrate multiple elements on the page, or use a third party library, or have different UI behaviour depending on the screen size... At a certain point you may find that separating your logic into discrete components (the [SoC](https://en.wikipedia.org/wiki/Separation_of_concerns) pattern) to be easier to create and maintain than the [LoB](https://htmx.org/essays/locality-of-behaviour/) approach - when that point is reached is entirely up to you.
+A core tenet of htmx is to inline implementation details, so that the behaviour of a unit of code is made as obvious as possible. You could use [_hyperscript](https://github.com/bigskysoftware/_hyperscript) to enhance your HTML (you should, it's ace!), but sometimes you'll need to reuse behaviour, or orchestrate multiple elements on the page, or use a third party library, or have different UI behaviour depending on the screen size... At a certain point you may find that separating your logic into discrete components (the [SoC](https://en.wikipedia.org/wiki/Separation_of_concerns) pattern) to be easier to create and maintain than the [LoB](https://htmx.org/essays/locality-of-behaviour/) approach – when that point is reached is entirely up to you.
 
 ## Requirements
 
