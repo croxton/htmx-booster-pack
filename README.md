@@ -120,6 +120,20 @@ Alternatively, to only boost selected links, inside or outside of the swap targe
 </body>
 ```
 
+## Already using a package manager?
+
+Booster Pack exports some handy modules that you can use to implement your own dynamic imports, using the same syntax described here.
+
+```bash
+npm i htmx-booster-pack
+```
+
+Use like this:
+```js
+import { Booster, loadStrategies } from 'htmx-booster-pack';
+```
+
+You'll need to write your own factory to make components, so that your build system can do code splitting and file hashing. See [/lib/boosterFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/boosterFactory.js) for an example.
 
 ## Attributes
 
