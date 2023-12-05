@@ -3,5 +3,5 @@
  *
  * This entry point is for development only
  */
-import '/lib/ext/booster';
+import './lib/ext/booster';
 

@@ -1,9 +1,14 @@
+import inject from '@rollup/plugin-inject'
 import { defineConfig } from 'vite';
 
 export default defineConfig(({ command }) => {
   if (command === 'serve') {
     return {
-      // use defaults for dev
+      plugins: [
+        inject({
+          Booster: '/lib/booster'
+        }),
+      ],
     }
   } else {
     return {
