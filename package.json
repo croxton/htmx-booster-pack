@@ -1,11 +1,14 @@
 {
   "name": "htmx-booster-pack",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Minimal component framework for htmx",
   "type": "module",
   "exports": {
     ".": {
       "import": "./dist/booster.min.js"
+    },
+    "./booster-pack": {
+      "import": "./dist/booster-pack.min.mjs"
     }
   },
   "files": [
@@ -13,7 +16,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.config.pack.js --emptyOutDir=false",
     "preview": "vite preview"
   },
   "repository": {
