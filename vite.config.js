@@ -1,17 +1,25 @@
 import { defineConfig } from 'vite';
 
-export default defineConfig({
-    esbuild: {
+export default defineConfig(({ command }) => {
+  if (command === 'serve') {
+    return {
+      // use defaults for dev
+    }
+  } else {
+    return {
+      esbuild: {
         minifyIdentifiers: false
-    },
-    build: {
+      },
+      build: {
         lib: {
-            entry: {
-                "booster": "./lib/ext/booster.js"
-            },
-            formats: ["es"],
-            fileName: (format, name) => `${name}.min.js`
+          entry: {
+            "booster": "./lib/ext/booster.js"
+          },
+          formats: ["es"],
+          fileName: (format, name) => `${name}.min.js`
         },
         minify: true
+      }
     }
+  }
 });
