@@ -9,7 +9,7 @@
     }
   },
   "files": [
-    "dist/*"
+    "dist/booster-pack.min.mjs"
   ],
   "scripts": {
     "dev": "vite",
