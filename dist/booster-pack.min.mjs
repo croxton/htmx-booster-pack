@@ -142,66 +142,7 @@ function loadStrategies(strategy, selector) {
   }
   return promises;
 }
-class BoosterFactory extends Booster {
-  constructor() {
-    super();
-    __publicField(this, "loaded", []);
-    __publicField(this, "config", {});
-    this.config = {
-      origin: location.origin,
-      basePath: "scripts/boosts"
-    };
-    let configMeta = document.querySelector('meta[name="booster-config"]') ?? null;
-    configMeta && (this.config = {
-      ...this.config,
-      ...JSON.parse(configMeta.content)
-    }), this.config.basePath = this.config.basePath.replace(/^\/|\/$/g, ""), this.mount();
-  }
-  mount() {
-    let targetId = htmx.config.currentTargetId ?? "main", target = document.getElementById(targetId);
-    if (target) {
-      let components = target.querySelectorAll("[data-booster]");
-      for (let el of components)
-        this.lazyload(el);
-      target = null, components = null;
-    }
-  }
-  unmount() {
-    let targetId = htmx.config.currentTargetId ?? "main", target = document.getElementById(targetId);
-    if (target) {
-      for (let i = this.loaded.length - 1; i >= 0; i--) {
-        let inTarget = target.querySelector(this.loaded[i].selector), inDocument = document.querySelector(this.loaded[i].selector);
-        (inTarget || !inDocument) && (this.loaded[i].instance.unmount(), this.loaded.splice(i, 1));
-      }
-      target = null;
-    }
-  }
-  /**
-   * Import a component on demand, optionally using a loading strategy
-   *
-   * @param el
-   */
-  lazyload(el) {
-    let component = el.dataset.booster, version = el.dataset.version ?? "1", strategy = el.dataset.load ?? null, selector = el.getAttribute("id") ? "#" + el.getAttribute("id") : '[data-booster="' + component + '"]', promises = loadStrategies(strategy, selector);
-    Promise.all(promises).then(() => {
-      import(
-        /* @vite-ignore */
-        `${this.config.origin}/${this.config.basePath}/${component}.js?v=${version}`
-      ).then(
-        (lazyComponent) => {
-          let instance = new lazyComponent.default(selector);
-          instance.mounted = !0, this.loaded.push({
-            name: component,
-            selector,
-            instance
-          });
-        }
-      );
-    });
-  }
-}
 export {
   Booster,
-  BoosterFactory,
   loadStrategies
 };
