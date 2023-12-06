@@ -43,7 +43,7 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 1. Include `booster.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
 <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.6/dist/booster.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.7/dist/booster.min.js"></script>
 ```
 
 2. Create a folder in the webroot of your project to store your scripts, e.g. `/scripts/boosts/`. Add a `<meta>` tag and set the `basePath` of your folder:
@@ -214,7 +214,7 @@ mount() {
 ````
 
 #### unmount()
-Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory. Remove any event listeners and observers that you created, and destroy state if you set it. The framework automatically tracks event listeners added to elements and provides a convenience function `clearEventListeners()` that can clean things up for you.
+Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory: disconnect any intersection or mutation observers and remove any event listeners that you attached to global objects or dom elements that you created within your script; finally, destroy state if you set it.
 
 ```js
 unmount() {
@@ -255,7 +255,7 @@ let currentState = this.getState('component', { a:null, b:null });
 ```
 
 #### stateChange(changes)
-Called by the `setState` method, with any changes to state passed as an object and intended to be overridden in your class. This can optionally be used to perform all DOM manipulation within a single function. Note that this can only be used with state changes in the `local` scope.
+Called by the `setState` method, with any changes to state passed as an object and intended to be overridden in your class. An example use of this method would be to perform all DOM manipulation in one place. Note that this can only be used with state changes in the `local` scope.
 
 ```js
 stateChange(stateChanges) {
@@ -283,9 +283,6 @@ this.destroyState('component');
 ```js
 export default class MyThing extends Booster {
 
-  thing;
-  thingObserver;
-
   constructor(elm) {
     super(elm);
 
@@ -306,17 +303,24 @@ export default class MyThing extends Booster {
     this.thing = document.querySelector(this.elm);
 
     // do amazing things...
-    this.thing.addEventListener("click", (e) => {
-      e.preventDefault();
-      console.log(this.options.message); // "Hello!"
-    });
+    this.clicked = (e) => {
+      console.log('Hello!');
+    }
+    this.clickHandler = this.clicked.bind(this);
+    window.addEventListener('click', this.clickHandler);
 
     this.thingObserver = new IntersectionObserver(...);
+
+    this.setState('component', {
+      playingVideoId: "123"
+    });
   }
 
   unmount() {
-    // remove any event listeners you created
-    this.thing.clearEventListeners();
+    // remove any event listeners you created on global objects like 'window'
+    // and on any dom elements that you created in mount()
+    window.removeEventListener('click', this.clickHandler);
+    this.clickHandler = null;
 
     // remove any observers you connected
     this.thingObserver.disconnect();
@@ -324,6 +328,9 @@ export default class MyThing extends Booster {
 
     // unset any references to DOM nodes
     this.thing = null;
+    
+    // destroy state if you used it
+    this.destroyState('component');
   }
 }
 ```

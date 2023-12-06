@@ -184,28 +184,21 @@ export default class VideoPlayer extends Booster {
   }
 
   unmount() {
-    // reset classes on root element
-    this.videoMount.classList.remove('is-ready');
-    this.videoMount.classList.remove('is-active');
-    this.videoMount.classList.remove('is-playing');
 
-    // remove markup inside video player container
+    // remove the markup we added to the video player container
+    // this will also remove any event listeners attached to it
     this.videoPlayer.innerHTML = null;
 
-    // remove listeners on play button
-    let videoBtn = this.videoMount.querySelector('.c-video__btn');
-    videoBtn.clearEventListeners();
-    videoBtn = null;
-
-    // remove instance
+    // remove Plyr instance
     this.playerInstance.destroy();
 
     // reset state
     this.destroyState('component');
 
-    // reset properties
+    // remove dom references
     this.videoMount = null;
     this.videoPlayer = null;
     this.playerInstance = null;
+
   }
 }

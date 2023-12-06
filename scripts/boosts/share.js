@@ -133,8 +133,11 @@ export default class Share extends Booster {
   }
 
   unmount() {
-    // remove event listeners and dom references
-    this.shareMount.clearEventListeners();
+
+    // reset element, this removes any event listeners we added
+    this.shareMount.innerHTML = null;
+
+    // remove dom reference
     this.shareMount = null;
   }
 }

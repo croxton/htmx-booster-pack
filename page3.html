@@ -28,11 +28,13 @@
         <header>
           <h2>Example htmx component: Video Player</h2>
           <p>
-            Plyr and PubSub npm packages imported via <a href="https://www.skypack.dev/">Skypack CDN</a>.
+            Plyr npm package imported via <a href="https://www.skypack.dev/">Skypack CDN</a>.
           <p>
-            Lazyloaded using the 'visible' strategy - will only be loaded when
-            it enters the viewport.
+            Lazyloaded using the 'visible' strategy - will only be loaded when it enters the viewport.
           </p>
+	        <p>
+		        Uses state to allow only one video on the page to play at a time.
+	        </p>
         </header>
 
         <div id="video-1" class="c-video" data-booster="videoPlayer" data-load="visible">

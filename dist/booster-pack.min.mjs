@@ -35,10 +35,10 @@ class Booster {
     this.unmount(), this.mount();
   }
   get state() {
-    return console.warn("You should not get state manually. Use getState() instead."), this._state;
+    return console.warn("Booster Pack: you should not get state manually. Use getState() instead."), this._state;
   }
   set state(state) {
-    console.warn("You should not change state manually. Use setState() instead."), this._state = state;
+    console.warn("Booster Pack: you should not change state manually. Use setState() instead."), this._state = state;
   }
   setState(scope = "local", changes) {
     let stateChanges = {}, stateRef = this._state;
@@ -86,6 +86,68 @@ Object.defineProperty(Booster, "_globalState", {
   value: {},
   writable: !0
 });
+class BoosterExt {
+  constructor(factoryClass, extension) {
+    let factory, cache = {
+      now: {},
+      next: {}
+    };
+    function saveToCache(dom, store) {
+      let markers = dom.querySelectorAll("[data-" + extension + ']:not([data-reset="false"])');
+      if (markers)
+        for (let i = 0; i < markers.length; ++i)
+          typeof markers[i].id < "u" && (cache[store][markers[i].id] = markers[i].outerHTML);
+    }
+    function rotateCache() {
+      let prunedCache = {};
+      for (let key in cache.now) {
+        let el = document.getElementById(key);
+        el && (prunedCache[key] = cache.now[key]), el = null;
+      }
+      cache.now = prunedCache, Object.keys(cache.next).length > 0 && (cache.now = {
+        ...cache.now,
+        ...cache.next
+      }, cache.next = {});
+    }
+    htmx.defineExtension(extension, {
+      init: function() {
+        factory = new factoryClass(extension), factory.mounted = !0, saveToCache(document, "now");
+      },
+      onEvent: function(name, htmxEvent) {
+        var _a, _b;
+        if (name === "htmx:beforeSwap") {
+          let incomingDOM = new DOMParser().parseFromString(
+            htmxEvent.detail.xhr.response,
+            "text/html"
+          );
+          incomingDOM && saveToCache(incomingDOM, "next"), incomingDOM = null;
+        }
+        if (name === "htmx:afterSettle" && (htmx.config.currentTargetId = htmxEvent.target.id, factory.refresh()), name === "htmx:historyItemCreated" && htmxEvent.detail.item.content) {
+          let cachedDOM = new DOMParser().parseFromString(
+            htmxEvent.detail.item.content,
+            "text/html"
+          );
+          for (let key in cache.now) {
+            let el = cachedDOM.getElementById(key);
+            el && (el.outerHTML = cache.now[key]), el = null;
+          }
+          htmxEvent.detail.item.content = cachedDOM.body.innerHTML, rotateCache();
+        }
+        if (name === "htmx:historyRestore") {
+          htmx.config.currentTargetId = null, factory.refresh();
+          let restored = (_b = (_a = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _a.item) == null ? void 0 : _b.content;
+          if (restored) {
+            let restoredDOM = new DOMParser().parseFromString(
+              restored,
+              "text/html"
+            );
+            restoredDOM && saveToCache(restoredDOM, "now");
+          }
+        }
+      }
+    });
+  }
+}
 const event = (requirement) => new Promise((resolve) => {
   let topic;
   if (requirement.indexOf("(") !== -1) {
@@ -144,5 +206,6 @@ function loadStrategies(strategy, selector) {
 }
 export {
   Booster,
+  BoosterExt,
   loadStrategies
 };
