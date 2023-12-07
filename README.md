@@ -144,7 +144,7 @@ Full example:
 import { Booster, BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
 
 // Your custom factory
-export default class MyCustomFactory extends BoosterFactory {
+class MyCustomFactory extends BoosterFactory {
   
   constructor(extension='booster') {
     super();
