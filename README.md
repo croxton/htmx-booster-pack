@@ -175,7 +175,7 @@ class MyCustomFactory extends BoosterFactory {
       // 1. Import path must be relative
       // 2. Do not use @alias's
       // 3. Must have a hardcoded extension
-      import(`../boosts/${el.dataset.component}.js`).then(
+      import(`../boosts/${component}.js`).then(
         (lazyComponent) => {
           let instance = new lazyComponent.default(selector);
           instance.mounted = true;
