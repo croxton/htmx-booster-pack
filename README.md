@@ -151,7 +151,7 @@ export default class MyCustomFactory extends BoosterFactory {
   }
   
   // Overwrite the lazyload method so that dynamic imports are done in a 
-  // way that is complaint with your build system's requirements for the 
+  // way that is compliant with your build system's requirements for the 
   // dynamic import path, to allow code-splitting, file hashing and HMR.
   // This example works with Vite: 
   lazyload(el) {
