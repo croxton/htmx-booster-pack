@@ -43,7 +43,7 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 1. Include `booster.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
 <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.7/dist/booster.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.8/dist/booster.min.js"></script>
 ```
 
 2. Create a folder in the webroot of your project to store your scripts, e.g. `/scripts/boosts/`. Add a `<meta>` tag and set the `basePath` of your folder:
@@ -131,17 +131,63 @@ npm i htmx-booster-pack
 
 Use like this:
 ```js
-import { Booster, BoosterExt, loadStrategies } from 'htmx-booster-pack';
+import { Booster, BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
 ```
 
 You'll need to write your own factory to make components, so that your bundler can do code splitting and file hashing. See [/lib/boosterFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/boosterFactory.js) for an example.
 
-Pass your factory to the extension to load it. The extension name is passed as the second parameter (if you want to change it from the default, 'booster'):
+Pass your factory to the extension to load it. The extension name is passed as the second parameter (if you want to change it from the default, 'booster').
+
+Full example:
 
 ```js
+import { Booster, BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
+
+// Your custom factory
+export default class MyCustomFactory extends BoosterFactory {
+  
+  constructor(extension='booster') {
+    super();
+  }
+  
+  // Overwrite the lazyload method so that dynamic imports are done in a 
+  // way that is complaint with your build system's requirements for the 
+  // dynamic import path, to allow code-splitting, file hashing and HMR.
+  // This example works with Vite: 
+  lazyload(el) {
+    let component = el.dataset[this.extension];
+    let strategy = el.dataset.load ?? null;
+    let selector = el.getAttribute('id')
+      ? '#' + el.getAttribute('id')
+      : null;
+    if (selector === null) {
+      return console.warn(`Booster Pack: an instance of ${component} doesn't have an ID attribute. Skipping.`)
+    }
+    let promises = loadStrategies(strategy, selector);
+
+    Promise.all(promises).then(() => {
+      // 1. Import path must be relative
+      // 2. Do not use @alias's
+      // 3. Must have a hardcoded extension
+      import(`../boosts/${el.dataset.component}.js`).then(
+        (lazyComponent) => {
+          let instance = new lazyComponent.default(selector);
+          instance.mounted = true;
+          this.loaded.push({
+            name: component,
+            selector: selector,
+            instance: instance,
+          });
+        }
+      );
+    });
+  }
+}
+
 // Create a custom htmx extension with the name 'custom-booster', 
-// matching components with the attribute data-custom-booster="xxx"
+// matching elements with the attribute 'data-custom-booster'
 new BoosterExt(MyCustomFactory, 'custom-booster'); 
+  
 ```
 
 ## Attributes

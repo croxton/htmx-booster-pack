@@ -1,6 +1,6 @@
 {
   "name": "htmx-booster-pack",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Minimal component framework for htmx",
   "type": "module",
   "exports": {
