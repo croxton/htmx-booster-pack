@@ -136,9 +136,15 @@ import { Booster, BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booste
 
 You'll need to write your own factory to make components, so that your bundler can do code splitting and file hashing. See [/lib/boosterFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/boosterFactory.js) for an example.
 
-Pass your factory to the extension to load it. The extension name is passed as the second parameter (if you want to change it from the default, 'booster').
+Pass your factory to the extension to load it. The extension name is passed as the second parameter (if you want to change it from the default, 'booster'):
 
-Full example:
+```js
+// Create a custom htmx extension with the name 'custom-booster', 
+// matching elements with the attribute 'data-custom-booster'
+new BoosterExt(MyCustomFactory, 'custom-booster');
+```
+
+Full example for Vite:
 
 ```js
 import { Booster, BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
