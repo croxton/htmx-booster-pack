@@ -93,7 +93,7 @@ class BoosterExt {
       next: {}
     };
     function saveToCache(dom, store) {
-      let markers = dom.querySelectorAll("[data-" + extension + ']:not([data-reset="false"])');
+      let markers = dom.querySelectorAll("[data-" + extension + '], [hx-history-preserve]:not([data-reset="false"])');
       if (markers)
         for (let i = 0; i < markers.length; ++i)
           typeof markers[i].id < "u" && (cache[store][markers[i].id] = markers[i].outerHTML);
