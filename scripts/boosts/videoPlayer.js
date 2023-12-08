@@ -70,16 +70,6 @@ export default class VideoPlayer extends Booster {
        */
       video = document.createElement("video");
 
-      // setup track - we need this as a workaround for a bug
-      // @see https://github.com/sampotts/plyr/issues/2034
-      track = document.createElement("track");
-      track.setAttribute("kind","captions");
-      track.setAttribute("label","English");
-      track.setAttribute("srclang","en");
-      track.setAttribute("src","");
-      track.setAttribute("default","");
-      video.appendChild(track);
-
       if (srcWebm && video.canPlayType("video/webm")) {
         // Use webm, if supported
         video.setAttribute("type","video/webm");
