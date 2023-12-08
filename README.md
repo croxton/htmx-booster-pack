@@ -147,13 +147,13 @@ new BoosterExt(MyCustomFactory, 'custom-booster');
 Full example for Vite:
 
 ```js
-import { Booster, BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
+import { BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
 
 // Your custom factory
 class MyCustomFactory extends BoosterFactory {
   
   constructor(extension='booster') {
-    super();
+    super(extension);
   }
   
   // Overwrite the lazyload method so that dynamic imports are done in a 
@@ -195,6 +195,8 @@ class MyCustomFactory extends BoosterFactory {
 new BoosterExt(MyCustomFactory, 'custom-booster'); 
   
 ```
+
+You can get creative with the types of component Booster Pack makes. Here's an example of a [custom factory](https://github.com/croxton/craftcms-hda-starter-kit/blob/main/src/scripts/framework/factory.js) that also makes Vue SFCs.
 
 ## Attributes
 
