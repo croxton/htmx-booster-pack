@@ -2,7 +2,7 @@
 
 ### A minimalistic component framework for htmx.
 
-Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a muddle when trying to (re)instantiate and destruct scripts, particularly when it comes to history navigation. This framework provides a simple component lifecycle to wrap your logic in; it allows you to load scripts on demand rather than up-front, and avoid memory leaks. No bundler required, all you need is `<script>`.
+Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a muddle when trying to (re)instantiate and destruct scripts as they user navigates your app. This framework provides a simple component lifecycle to wrap your logic in; it allows you to load scripts on demand rather than up-front, and avoid memory leaks. No bundler required, all you need is `<script>`.
 
 You can try it out online with StackBlitz: 
 https://stackblitz.com/github/croxton/htmx-booster-pack
@@ -43,7 +43,7 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 1. Include `booster.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
 <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.0.9/dist/booster.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.1.0/dist/booster.min.js"></script>
 ```
 
 2. Create a folder in the webroot of your project to store your scripts, e.g. `/scripts/boosts/`. Add a `<meta>` tag and set the `basePath` of your folder:
@@ -131,7 +131,7 @@ npm i htmx-booster-pack
 
 Use like this:
 ```js
-import { Booster, BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
+import { Booster, BoosterExt, BoosterFactory, BoosterConductor, loadStrategies } from 'htmx-booster-pack';
 ```
 
 You'll need to write your own factory to make components, so that your bundler can do code splitting and file hashing. See [/lib/boosterFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/boosterFactory.js) for an example.
@@ -336,7 +336,6 @@ this.destroyState('component');
 
 ### Example class
 
-
 #### html
 ```html
 <div id="my-thing-1" data-booster="myThing" data-options='{"message":"Hello!"}'></div>
@@ -396,6 +395,19 @@ export default class MyThing extends Booster {
     this.destroyState('component');
   }
 }
+```
+
+### Conductors
+
+Conductors are a special type of Booster class for managing **multiple** elements matching a selector, rather than being attached to a individual elements via `data-booster=""` attributes. They can be a more efficient way to coordinate the behaviour of groups of separated elements, such as lazy loading images, or updating the active state of navigation menus. To load a conductor add a `conductors` array to your meta tag. Specify the conductor name, CSS selector, loading strategy and version for each conductor you want to register. A conductor is loaded and mounted  using the specified strategy when its selector is detected in the dom, and unmounted (but not destroyed) when it is no longer found in the dom; as such, conductors retain any properties that you set on the class, unless you destroy them in `unmount()`.
+```html
+<meta name="booster-config" content='{
+      "basePath" : "/scripts/boosts/",
+      "conductors" : [
+        { "conductor": "myClass1", "selector" : "[data-thing1]", "strategy": "eager", "version": "1" },
+        { "conductor": "myClass2", "selector" : ".thing2", "strategy": "visible", "version": "1" },
+      ]
+    }'>
 ```
 
 ## Loading strategies

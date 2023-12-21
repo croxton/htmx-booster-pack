@@ -266,8 +266,76 @@ class BoosterFactory extends Booster {
     });
   }
 }
+class BoosterConductor extends BoosterFactory {
+  // Only loaded conductor instances
+  constructor(extension = "booster", conductors = []) {
+    super(extension);
+    __publicField(this, "registered", []);
+    // ALL registered conductors
+    __publicField(this, "loaded", []);
+    this.defaults = {
+      conductors
+    }, this.config = {
+      ...this.defaults,
+      ...this.config
+    }, this.config.conductors.forEach((conductor) => {
+      this.register(conductor);
+    });
+  }
+  mount() {
+    htmx.on("htmx:afterSettle", (htmxEvent) => {
+      htmx.config.currentTargetId = htmxEvent.target.id;
+      for (const [key, entry] of Object.entries(this.registered))
+        this.lifeCycle(entry);
+    }), htmx.on("htmx:historyRestore", (htmxEvent) => {
+      htmx.config.currentTargetId = null;
+      for (const [key, entry] of Object.entries(this.registered))
+        this.lifeCycle(entry);
+    });
+  }
+  unmount() {
+  }
+  /**
+   * Manage the conductor lifecycle
+   *
+   * @param {object}  entry
+   */
+  lifeCycle(entry) {
+    entry.conductor in this.loaded ? entry.selector && (document.querySelector(entry.selector) ? this.loaded[entry.conductor].mounted ? this.loaded[entry.conductor].refresh() : (this.loaded[entry.conductor].mount(), this.loaded[entry.conductor].mounted = !0) : this.loaded[entry.conductor].mounted && (this.loaded[entry.conductor].unmount(), this.loaded[entry.conductor].mounted = !1)) : entry.selector ? document.querySelector(entry.selector) && this.lazyload(entry) : this.lazyload(entry);
+  }
+  /**
+   * Register a conductor
+   *
+   * @param entry
+   * @param {string}  conductor
+   * @param {string | null}  selector
+   * @param {string | null}  strategy
+   * @param {number}  version
+   */
+  register(entry, { conductor, selector = null, strategy = "eager", version = 1 } = entry) {
+    this.registered.push(entry), this.lifeCycle(entry);
+  }
+  /**
+   * Import a conductor and run its constructor
+   * We'll use lazy loading for the chunk file
+   *
+   * @param {object}  entry
+   */
+  lazyload(entry) {
+    let promises = loadStrategies(entry.strategy, entry.selector);
+    Promise.all(promises).then(() => {
+      import(
+        /* @vite-ignore */
+        `${this.config.origin}/${this.config.basePath}/${entry.conductor}.js?v=${entry.version}`
+      ).then((lazyConductor) => {
+        this.loaded[entry.conductor] = new lazyConductor.default(entry.selector), this.loaded[entry.conductor].mounted = !0;
+      });
+    });
+  }
+}
 export {
   Booster,
+  BoosterConductor,
   BoosterExt,
   BoosterFactory,
   loadStrategies

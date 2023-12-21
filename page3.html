@@ -4,10 +4,15 @@
     <title>Page 3</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="booster-config" content='{ "basePath" : "/scripts/boosts/" }'>
+    <meta name="booster-config" content='{
+      "basePath" : "/scripts/boosts/",
+      "conductors" : [
+        { "conductor": "unveil", "selector" : "[data-unveil]", "strategy": "eager", "version": "3" }
+      ]
+    }'>
     <link rel="stylesheet" href="/styles/styles.css" />
     <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@1.9.9/src/htmx.min.js"></script>
-	  <script src="/main.js" type="module"></script>
+	<script src="/main.js" type="module"></script>
   </head>
   <body hx-ext="booster">
     <header id="header">
@@ -20,13 +25,14 @@
         <a href="/">Home</a>
         <a href="/page2.html">Page 2</a>
         <a href="/page3.html">Page 3</a>
+        <a href="/page4.html">Page 4</a>
       </nav>
     </header>
     <main id="main" hx-history-elt>
       <h1>Page 3</h1>
       <section>
         <header>
-          <h2>Example htmx component: Video Player</h2>
+          <h2>Example component: videoPlayer.js</h2>
           <p>
             Plyr npm package imported via <a href="https://www.skypack.dev/">Skypack CDN</a>.
           <p>
