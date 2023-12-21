@@ -286,6 +286,16 @@ unmount() {
 }
 ````
 
+#### refresh() 
+Used by [conductors](https://github.com/croxton/htmx-booster-pack#conductors) only. Use this method to "refresh" the state of elements managed by the class. By default, `refresh()` will call `unmount()` and then `mount()` on the component, but you can override this method to use your own "refresh" logic.
+
+```js
+refresh() {
+  this.unmount();
+  this.mount();
+}
+````
+
 #### css(urls)
 Since ES6 modules running in the browser can’t dynamically import CSS, this method provides a convenient way to load an array of stylesheet URLs, returning a promise. Stylesheets will only be loaded once no matter how many component instances you have, or which pages they appear on.
 
@@ -399,7 +409,7 @@ export default class MyThing extends Booster {
 
 ### Conductors
 
-Conductors are a special type of Booster class for managing **multiple** elements matching a selector, rather than being attached to a individual elements via `data-booster=""` attributes. They can be a more efficient way to coordinate the behaviour of groups of separated elements, such as lazy loading images, or updating the active state of navigation menus. To load a conductor add a `conductors` array to your meta tag. Specify the conductor name, CSS selector, loading strategy and version for each conductor you want to register. A conductor is loaded and mounted  using the specified strategy when its selector is detected in the dom, and unmounted (but not destroyed) when it is no longer found in the dom; as such, conductors retain any properties that you set on the class, unless you destroy them in `unmount()`.
+Conductors are a special type of Booster class for managing **multiple** elements matching a selector, rather than being attached to a individual elements via `data-booster=""` attributes. They can be a more efficient way to coordinate the behaviour of groups of separated elements, such as lazy loading images, or updating the active state of navigation menus. To register a conductor add a `conductors` array to your meta tag. Specify the conductor name, CSS selector, loading strategy and version for each conductor you want to register. A conductor is loaded and mounted using the specified strategy when its selector is detected in the dom, and unmounted (but not destroyed) when it is no longer found in the dom; as such, conductors are stateful - they retain any properties that you set on the class regardless of mount/unmount lifecycles, unless you destroy the properties in `unmount()`. Conductors are also not bound to a htmx target, so mounted conductors will be "refreshed" (unmount/mount) on every swap, if the selector remains in the dom after the swap.
 ```html
 <meta name="booster-config" content='{
       "basePath" : "/scripts/boosts/",
