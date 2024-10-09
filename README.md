@@ -31,7 +31,7 @@ export default class Celebrate extends Booster {
 
 ## But why?
 
-A core tenet of htmx is to inline implementation details, so that the behaviour of a unit of code is made as obvious as possible. You could reach for [_hyperscript](https://github.com/bigskysoftware/_hyperscript) or [Alpine.js(https://alpinejs.dev/)]() to enhance your HTML, but sometimes you'll want to reuse behaviour, orchestrate multiple elements on the page, use a third party library, or have different UI behaviour depending on the screen size... At a certain point you may find that separating your logic into discrete components (the [SoC](https://en.wikipedia.org/wiki/Separation_of_concerns) pattern) to be easier to create and maintain than the [LoB](https://htmx.org/essays/locality-of-behaviour/) approach – when that point is reached is entirely up to you.
+A core tenet of htmx is to inline implementation details, so that the behaviour of a unit of code is made as obvious as possible. You could reach for [_hyperscript](https://github.com/bigskysoftware/_hyperscript) or [Alpine.js](https://alpinejs.dev/) to enhance your HTML, but sometimes you'll want to reuse behaviour, orchestrate multiple elements on the page, use a third party library, or have different UI behaviour depending on the screen size... At a certain point you may find that separating your logic into discrete components (the [SoC](https://en.wikipedia.org/wiki/Separation_of_concerns) pattern) to be easier to create and maintain than the [LoB](https://htmx.org/essays/locality-of-behaviour/) approach – when that point is reached is entirely up to you.
 
 ## Requirements
 
