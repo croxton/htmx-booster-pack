@@ -2,7 +2,7 @@
 
 ### A minimalistic component framework for htmx.
 
-Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a muddle when trying to (re)instantiate and destruct scripts as the user navigates your app. This framework provides a simple component lifecycle to wrap your logic in; it allows you to load scripts on demand rather than up-front, and avoid memory leaks. No bundler required, all you need is `<script>`.
+Booster Pack for [htmx](https://github.com/bigskysoftware/htmx) helps with managing your own and third-party scripts, especially when using the powerful [hx-boost](https://htmx.org/attributes/hx-boost/) attribute. Since htmx can effectively turn a website into a single page app, it’s easy to get into a mess when trying to (re)instantiate and destruct scripts as the user navigates your app. This extension provides a simple component lifecycle to wrap your logic in; it allows you to load scripts on demand rather than all up-front, and it helps you avoid memory leaks. No bundler required, all you need is `<script>`.
 
 You can try it out online with StackBlitz: 
 https://stackblitz.com/github/croxton/htmx-booster-pack
@@ -31,7 +31,7 @@ export default class Celebrate extends Booster {
 
 ## But why?
 
-A core tenet of htmx is to inline implementation details, so that the behaviour of a unit of code is made as obvious as possible. You could use [_hyperscript](https://github.com/bigskysoftware/_hyperscript) to enhance your HTML (you should, it's ace!), but sometimes you'll need to reuse behaviour, or orchestrate multiple elements on the page, or use a third party library, or have different UI behaviour depending on the screen size... At a certain point you may find that separating your logic into discrete components (the [SoC](https://en.wikipedia.org/wiki/Separation_of_concerns) pattern) to be easier to create and maintain than the [LoB](https://htmx.org/essays/locality-of-behaviour/) approach – when that point is reached is entirely up to you.
+A core tenet of htmx is to inline implementation details, so that the behaviour of a unit of code is made as obvious as possible. You could reach for [_hyperscript](https://github.com/bigskysoftware/_hyperscript) or [Alpine.js(https://alpinejs.dev/)]() to enhance your HTML, but sometimes you'll want to reuse behaviour, orchestrate multiple elements on the page, use a third party library, or have different UI behaviour depending on the screen size... At a certain point you may find that separating your logic into discrete components (the [SoC](https://en.wikipedia.org/wiki/Separation_of_concerns) pattern) to be easier to create and maintain than the [LoB](https://htmx.org/essays/locality-of-behaviour/) approach – when that point is reached is entirely up to you.
 
 ## Requirements
 
@@ -119,84 +119,6 @@ Alternatively, to only boost selected links, inside or outside of the swap targe
     </main>
 </body>
 ```
-
-## Using a bundler?
-
-Booster Pack exports some handy modules that you can use to implement your own dynamic imports within a build system such as Vite or Webpack, using the same syntax described here.
-
-Install Booster Pack:
-```bash
-npm i htmx-booster-pack
-```
-
-Use like this:
-```js
-import { Booster, BoosterExt, BoosterFactory, BoosterConductor, loadStrategies } from 'htmx-booster-pack';
-```
-
-You'll need to write your own factory to make components, so that your bundler can do code splitting and file hashing. See [/lib/boosterFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/boosterFactory.js) for an example.
-
-Pass your factory to the extension to load it. The extension name is passed as the second parameter (if you want to change it from the default, 'booster'):
-
-```js
-// Create a custom htmx extension with the name 'custom-booster', 
-// matching elements with the attribute 'data-custom-booster'
-new BoosterExt(MyCustomFactory, 'custom-booster');
-```
-
-Full example for Vite:
-
-```js
-import { BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
-
-// Your custom factory
-class MyCustomFactory extends BoosterFactory {
-  
-  constructor(extension='booster') {
-    super(extension);
-  }
-  
-  // Overwrite the lazyload method so that dynamic imports are done in a 
-  // way that is compliant with your build system's requirements for the 
-  // dynamic import path, to allow code-splitting, file hashing and HMR.
-  // This example works with Vite: 
-  lazyload(el) {
-    let component = el.dataset[this.extension];
-    let strategy = el.dataset.load ?? null;
-    let selector = el.getAttribute('id')
-      ? '#' + el.getAttribute('id')
-      : null;
-    if (selector === null) {
-      return console.warn(`Booster Pack: an instance of ${component} doesn't have an ID attribute. Skipping.`)
-    }
-    let promises = loadStrategies(strategy, selector);
-
-    Promise.all(promises).then(() => {
-      // 1. Import path must be relative
-      // 2. Do not use @alias's
-      // 3. Must have a hardcoded extension
-      import(`../boosts/${component}.js`).then(
-        (lazyComponent) => {
-          let instance = new lazyComponent.default(selector);
-          instance.mounted = true;
-          this.loaded.push({
-            name: component,
-            selector: selector,
-            instance: instance,
-          });
-        }
-      );
-    });
-  }
-}
-
-// Create a custom htmx extension with the name 'custom-booster', 
-// matching elements with the attribute 'data-custom-booster'
-new BoosterExt(MyCustomFactory, 'custom-booster'); 
-  
-```
-
-You can get creative with the types of component Booster Pack makes. Here's an example of a [custom factory](https://github.com/croxton/craftcms-hda-starter-kit/blob/main/src/scripts/framework/factory.js) that also makes Vue SFCs.
 
 ## Attributes
 
@@ -463,6 +385,84 @@ Strategies can be combined by separating with a pipe |, allowing for advanced an
 ```html
 <div id="my-thing-1" data-booster="myThing" data-load="idle | visible | media (min-width: 1024px)"></div>
 ```
+
+## Using a bundler?
+
+Booster Pack exports some handy modules that you can use to implement your own dynamic imports within a build system such as Vite or Webpack, using the same syntax described here.
+
+Install Booster Pack:
+```bash
+npm i htmx-booster-pack
+```
+
+Use like this:
+```js
+import { Booster, BoosterExt, BoosterFactory, BoosterConductor, loadStrategies } from 'htmx-booster-pack';
+```
+
+You'll need to write your own factory to make components, so that your bundler can do code splitting and file hashing. See [/lib/boosterFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/boosterFactory.js) for an example.
+
+Pass your factory to the extension to load it. The extension name is passed as the second parameter (if you want to change it from the default, 'booster'):
+
+```js
+// Create a custom htmx extension with the name 'custom-booster', 
+// matching elements with the attribute 'data-custom-booster'
+new BoosterExt(MyCustomFactory, 'custom-booster');
+```
+
+Full example for Vite:
+
+```js
+import { BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
+
+// Your custom factory
+class MyCustomFactory extends BoosterFactory {
+  
+  constructor(extension='booster') {
+    super(extension);
+  }
+  
+  // Overwrite the lazyload method so that dynamic imports are done in a 
+  // way that is compliant with your build system's requirements for the 
+  // dynamic import path, to allow code-splitting, file hashing and HMR.
+  // This example works with Vite: 
+  lazyload(el) {
+    let component = el.dataset[this.extension];
+    let strategy = el.dataset.load ?? null;
+    let selector = el.getAttribute('id')
+      ? '#' + el.getAttribute('id')
+      : null;
+    if (selector === null) {
+      return console.warn(`Booster Pack: an instance of ${component} doesn't have an ID attribute. Skipping.`)
+    }
+    let promises = loadStrategies(strategy, selector);
+
+    Promise.all(promises).then(() => {
+      // 1. Import path must be relative
+      // 2. Do not use @alias's
+      // 3. Must have a hardcoded extension
+      import(`../boosts/${component}.js`).then(
+        (lazyComponent) => {
+          let instance = new lazyComponent.default(selector);
+          instance.mounted = true;
+          this.loaded.push({
+            name: component,
+            selector: selector,
+            instance: instance,
+          });
+        }
+      );
+    });
+  }
+}
+
+// Create a custom htmx extension with the name 'custom-booster', 
+// matching elements with the attribute 'data-custom-booster'
+new BoosterExt(MyCustomFactory, 'custom-booster'); 
+  
+```
+
+You can get creative with the types of component Booster Pack makes. Here's an example of a [custom factory](https://github.com/croxton/craftcms-hda-starter-kit/blob/main/src/scripts/framework/factory.js) that also makes Vue SFCs.
 
 ## Thank you
 
