@@ -120,6 +120,17 @@ Alternatively, to only boost selected links, inside or outside of the swap targe
 </body>
 ```
 
+## HTML structure without `hx-boost`
+
+Not boosting? No problem. Your scripts will still be dynamically imported and use loading strategies, and Booster Pack will look for them inside any html fragments that you swap into the page with htmx. Booster Pack's only requirement is that you include an element with the ID `main`:
+
+```html
+<body hx-ext="booster">
+    <main id="main" hx-history-elt>
+    </main>
+</body>
+```
+
 ## Attributes
 
 ### id
