@@ -26,7 +26,7 @@
  </div>
  */
 
-import Plyr from 'https://cdn.skypack.dev/plyr';
+import Plyr from 'https://cdn.jsdelivr.net/npm/plyr@3.8.3/+esm';
 
 export default class VideoPlayer extends Booster {
 
