@@ -28,6 +28,6 @@
   "license": "BSD 2-Clause",
   "devDependencies": {
     "@rollup/plugin-inject": "^5.0.5",
-    "vite": "5.2.12"
+    "vite": "^5.2.12"
   }
 }
