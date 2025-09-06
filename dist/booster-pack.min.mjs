@@ -90,7 +90,8 @@ class BoosterExt {
   constructor(factoryClass, extension) {
     let factory, cache = {
       now: {},
-      next: {}
+      next: {},
+      hit: !1
     };
     function saveToCache(dom, store) {
       let markers = dom.querySelectorAll("[data-" + extension + ']:not([data-reset="false"]), [hx-history-preserve]:not([data-reset="false"])');
@@ -111,7 +112,11 @@ class BoosterExt {
     }
     htmx.defineExtension(extension, {
       init: function() {
-        factory = new factoryClass(extension), factory.mounted = !0, saveToCache(document, "now");
+        factory = new factoryClass(extension), factory.mounted = !0;
+        function initCache() {
+          saveToCache(document, "now");
+        }
+        document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initCache) : initCache();
       },
       onEvent: function(name, htmxEvent) {
         var _a, _b;
@@ -133,8 +138,8 @@ class BoosterExt {
           }
           htmxEvent.detail.item.content = cachedDOM.body.innerHTML, rotateCache();
         }
-        if (name === "htmx:historyRestore") {
-          htmx.config.currentTargetId = null, factory.refresh();
+        if (name === "htmx:historyCacheHit" && (cache.hit = !0), name === "htmx:historyRestore") {
+          htmx.config.currentTargetId = null, cache.hit || factory.refresh(), cache.hit = !1;
           let restored = (_b = (_a = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _a.item) == null ? void 0 : _b.content;
           if (restored) {
             let restoredDOM = new DOMParser().parseFromString(
