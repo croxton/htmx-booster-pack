@@ -272,12 +272,14 @@ class BoosterFactory extends Booster {
   }
 }
 class BoosterConductor extends BoosterFactory {
-  // Only loaded conductor instances
+  // restoring from history cache?
   constructor(extension = "booster", conductors = []) {
     super(extension);
     __publicField(this, "registered", []);
     // ALL registered conductors
     __publicField(this, "loaded", []);
+    // Only loaded conductor instances
+    __publicField(this, "cacheHit", !1);
     this.defaults = {
       conductors
     }, this.config = {
@@ -292,10 +294,13 @@ class BoosterConductor extends BoosterFactory {
       htmx.config.currentTargetId = htmxEvent.target.id;
       for (const [key, entry] of Object.entries(this.registered))
         this.lifeCycle(entry);
+    }), htmx.on("htmx:historyCacheHit", (htmxEvent) => {
+      this.cacheHit = !0;
     }), htmx.on("htmx:historyRestore", (htmxEvent) => {
-      htmx.config.currentTargetId = null;
-      for (const [key, entry] of Object.entries(this.registered))
-        this.lifeCycle(entry);
+      if (htmx.config.currentTargetId = null, !this.cacheHit)
+        for (const [key, entry] of Object.entries(this.registered))
+          this.lifeCycle(entry);
+      this.cacheHit = !1;
     });
   }
   unmount() {
