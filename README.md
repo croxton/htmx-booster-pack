@@ -199,6 +199,8 @@ constructor() {
 
 ### Methods
 
+The `Booster` base class provides lifecycle hooks that you can override to implement custom behaviour:
+
 #### mount() 
 Use this method to initialise your component logic.
 
@@ -209,8 +211,28 @@ mount() {
 }
 ````
 
+#### beforeUnmount()
+Called right before a component instance is to be unmounted. Use this method to:
+- Perform any DOM-contingent cleanup before a component is removed from the DOM. For example, video is downloaded into a seperate buffer in memory which can only be released by removing the `src` attribute of a `<video>` element _before_ it is removed from the DOM.
+- Create exit animations.
+
+```js
+beforeUnmount() {
+  if (this.video) {
+    this.video.removeAttribute('src'); // remove buffer
+  }
+}
+````
+
 #### unmount()
-Use this method to remove any references to elements in the DOM so that the browser can perform garbage collection and release memory: disconnect any intersection or mutation observers and remove any event listeners that you attached to global objects or dom elements that you created within your script; finally, destroy state if you set it.
+Called after a component has been unmounted (removed from the DOM). Use this method to cleanup so that the browser can perform garbage collection and release memory: 
+- Remove element references
+- Disconnect intersection or mutation observers. 
+- Remove event listeners that you attached to global objects or dom elements.
+- Clear any running timers.
+- Abort async tasks / promises.
+- Close open server connections.
+- Destroy state if you set it.
 
 ```js
 unmount() {
@@ -229,14 +251,7 @@ refresh() {
 }
 ````
 
-#### css(urls)
-Since ES6 modules running in the browser can’t dynamically import CSS, this method provides a convenient way to load an array of stylesheet URLs, returning a promise. Stylesheets will only be loaded once no matter how many component instances you have, or which pages they appear on.
-
-```js
-this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
-  this.mount();
-});
-```
+The `Booster` base class also provides methods for storing and retrieving data that is specific to a component instance, that can be shared across all instances of the same class, or across all components globally:
 
 #### setState(scope, changes)
 Method called to update state. Only changes of state are required to be passed in a form of an object, and these will be merged with current state. Objects stored in state can be scoped as follows:
@@ -275,6 +290,17 @@ stateChange(stateChanges) {
 Reset state in the given scope. If you have used state, call this in the `unmount()` method of your class.
 ```js
 this.destroyState('component');
+```
+
+Finally, the `Booster` base class provides the following utility methods:
+
+#### css(urls)
+Since ES6 modules running in the browser can’t dynamically import CSS, this method provides a convenient way to load an array of stylesheet URLs, returning a promise. Stylesheets will only be loaded once no matter how many component instances you have, or which pages they appear on.
+
+```js
+this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
+  this.mount();
+});
 ```
 
 ### Example class
