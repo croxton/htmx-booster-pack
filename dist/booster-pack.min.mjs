@@ -7,29 +7,27 @@ class Booster {
     __publicField(this, "elm", null);
     __publicField(this, "target", null);
     __publicField(this, "_state", {});
+    __publicField(this, "_options", {});
     this._options = options || {}, element && (this.elm = element);
   }
   get options() {
     return this._options;
   }
-  set options(defaults) {
-    let options = {};
-    if (this.elm) {
-      let mount = document.querySelector(this.elm);
-      if (mount) {
-        let optionsFromAttribute = mount.dataset.options;
-        optionsFromAttribute && (options = JSON.parse(optionsFromAttribute)), mount = null;
-      }
-    }
+  set options(defaults = {}) {
+    const attributeOptions = this._getOptionsFromAttribute();
     this._options = {
       ...this._options,
       ...defaults,
-      ...options
+      ...attributeOptions
     };
   }
   mount() {
+    this.mounted || (this.mounted = !0);
+  }
+  beforeUnmount() {
   }
   unmount() {
+    this.mounted && (this.mounted = !1);
   }
   refresh() {
     this.unmount(), this.mount();
@@ -38,48 +36,102 @@ class Booster {
     return console.warn("Booster Pack: you should not get state manually. Use getState() instead."), this._state;
   }
   set state(state) {
-    console.warn("Booster Pack: you should not change state manually. Use setState() instead."), this._state = state;
+    console.warn("Booster Pack: you should not change state manually. Use setState() instead."), this._state = state || {};
   }
-  setState(scope = "local", changes) {
-    let stateChanges = {}, stateRef = this._state;
-    scope === "global" ? stateRef = Booster._globalState : scope === "component" && (Booster._globalState.hasOwnProperty(this.constructor.name) || (Booster._globalState[this.constructor.name] = {}), stateRef = Booster._globalState[this.constructor.name]), Object.keys(changes).forEach((key) => {
-      Array.isArray(changes[key]) ? stateRef[key] != null && Array.isArray(stateRef[key]) && stateRef[key].length === changes[key].length ? changes[key].some((item, index) => stateRef[key][index] !== item ? (stateChanges[key] = changes[key], stateRef[key] = stateChanges[key], !0) : !1) : (stateChanges[key] = changes[key], stateRef[key] = stateChanges[key]) : typeof changes[key] == "object" ? (stateRef[key] != null && typeof stateRef[key] == "object" ? (stateChanges[key] = {}, Object.keys(changes[key]).forEach((subkey) => {
-        stateRef[key][subkey] !== changes[key][subkey] && (stateChanges[key][subkey] = changes[key][subkey]);
-      })) : stateChanges[key] = changes[key], stateRef[key] = {
-        ...stateRef[key],
-        ...stateChanges[key]
-      }) : stateRef !== changes[key] && (stateChanges[key] = changes[key], stateRef[key] = changes[key]);
-    }), Object.keys(stateChanges).forEach((key) => {
-      Array.isArray(changes[key]) ? stateChanges[key].length === 0 && delete stateChanges[key] : typeof changes[key] == "object" && Object.keys(stateChanges[key]).length === 0 && delete stateChanges[key];
-    }), stateRef = null, this.stateChange(stateChanges);
+  setState(scope = "local", changes = {}) {
+    if (!changes || typeof changes != "object" || Array.isArray(changes))
+      return;
+    const stateRef = this._getStateRef(scope, !0), stateChanges = {};
+    Object.keys(changes).forEach((key) => {
+      const nextValue = changes[key], currentValue = stateRef[key];
+      if (Array.isArray(nextValue)) {
+        this._arraysAreEqual(currentValue, nextValue) || (stateRef[key] = [...nextValue], stateChanges[key] = [...nextValue]);
+        return;
+      }
+      if (this._isPlainObject(nextValue)) {
+        const objectChanges = {};
+        this._isPlainObject(currentValue) ? (Object.keys(nextValue).forEach((subkey) => {
+          currentValue[subkey] !== nextValue[subkey] && (objectChanges[subkey] = nextValue[subkey]);
+        }), Object.keys(objectChanges).length > 0 && (stateRef[key] = {
+          ...currentValue,
+          ...objectChanges
+        }, stateChanges[key] = objectChanges)) : (stateRef[key] = { ...nextValue }, stateChanges[key] = { ...nextValue });
+        return;
+      }
+      currentValue !== nextValue && (stateRef[key] = nextValue, stateChanges[key] = nextValue);
+    }), Object.keys(stateChanges).length > 0 && this.stateChange(stateChanges);
   }
   stateChange(changes) {
   }
   getState(scope = "local", defaults = {}) {
-    let stateRef = this._state;
-    return scope === "global" ? stateRef = Booster._globalState : scope === "component" && (Booster._globalState.hasOwnProperty(this.constructor.name) ? stateRef = Booster._globalState[this.constructor.name] : stateRef = {}), {
+    const stateRef = this._getStateRef(scope, !1);
+    return {
       ...defaults,
       ...stateRef
     };
   }
   destroyState(scope = "local") {
-    scope === "global" ? Booster._globalState = {} : scope === "component" ? Booster._globalState.hasOwnProperty(this.constructor.name) && (Booster._globalState[this.constructor.name] = {}) : this._state = {};
+    if (scope === "global") {
+      Booster._globalState = {};
+      return;
+    }
+    if (scope === "component") {
+      Booster._globalState[this.constructor.name] = {};
+      return;
+    }
+    this._state = {};
   }
-  css(urls) {
-    return Promise.all(urls.map(this._loadCSS));
+  css(urls = []) {
+    const list = Array.isArray(urls) ? urls : [urls];
+    return Promise.all(list.map((href) => this._loadCSS(href)));
   }
   _loadCSS(href) {
-    return new Promise((resolve) => {
-      if (Booster._sheets.includes(href))
-        return resolve();
-      Booster._sheets.push(href);
-      let link = document.createElement("link");
-      link.type = "text/css", link.rel = "stylesheet", link.onload = resolve, link.setAttribute("href", href), document.head.appendChild(link);
+    return new Promise((resolve, reject) => {
+      if (!href) {
+        resolve();
+        return;
+      }
+      if (Booster._sheets[href]) {
+        Booster._sheets[href].then(resolve).catch(reject);
+        return;
+      }
+      Booster._sheets[href] = new Promise((sheetResolve, sheetReject) => {
+        const link = document.createElement("link");
+        link.type = "text/css", link.rel = "stylesheet", link.href = href, link.onload = sheetResolve, link.onerror = sheetReject, document.head.appendChild(link);
+      }), Booster._sheets[href].then(resolve).catch(reject);
     });
+  }
+  _resolveElement(element) {
+    return element ? typeof element == "string" ? document.querySelector(element) : element instanceof Element ? element : null : null;
+  }
+  _getOptionsFromAttribute() {
+    const mount = this._resolveElement(this.elm);
+    if (!mount || !mount.dataset || !mount.dataset.options)
+      return {};
+    try {
+      return JSON.parse(mount.dataset.options);
+    } catch (error) {
+      return console.warn("Booster Pack: invalid JSON in data-options attribute.", error), {};
+    }
+  }
+  _getStateRef(scope = "local", create = !1) {
+    if (scope === "global")
+      return Booster._globalState;
+    if (scope === "component") {
+      const componentName = this.constructor.name;
+      return create && !Object.prototype.hasOwnProperty.call(Booster._globalState, componentName) && (Booster._globalState[componentName] = {}), Booster._globalState[componentName] || {};
+    }
+    return this._state;
+  }
+  _arraysAreEqual(first, second) {
+    return !Array.isArray(first) || !Array.isArray(second) || first.length !== second.length ? !1 : first.every((item, index) => item === second[index]);
+  }
+  _isPlainObject(value) {
+    return value !== null && typeof value == "object" && !Array.isArray(value);
   }
 }
 Object.defineProperty(Booster, "_sheets", {
-  value: [],
+  value: {},
   writable: !0
 });
 Object.defineProperty(Booster, "_globalState", {
@@ -88,27 +140,34 @@ Object.defineProperty(Booster, "_globalState", {
 });
 class BoosterExt {
   constructor(factoryClass, extension) {
-    let factory, cache = {
-      now: {},
-      next: {},
+    let factory;
+    const parser = new DOMParser();
+    let cache = {
+      now: /* @__PURE__ */ Object.create(null),
+      next: /* @__PURE__ */ Object.create(null),
       hit: !1
     };
+    function parseHTML(html) {
+      return html ? parser.parseFromString(html, "text/html") : null;
+    }
+    function createCacheStore() {
+      return /* @__PURE__ */ Object.create(null);
+    }
     function saveToCache(dom, store) {
-      let markers = dom.querySelectorAll("[data-" + extension + ']:not([data-reset="false"]), [hx-history-preserve]:not([data-reset="false"])');
-      if (markers)
-        for (let i = 0; i < markers.length; ++i)
-          typeof markers[i].id < "u" && (cache[store][markers[i].id] = markers[i].outerHTML);
+      const markers = dom.querySelectorAll(
+        `[data-${extension}]:not([data-reset="false"]), [hx-history-preserve]:not([data-reset="false"])`
+      );
+      for (const marker of markers)
+        marker.id && (cache[store][marker.id] = marker.outerHTML);
     }
     function rotateCache() {
-      let prunedCache = {};
-      for (let key in cache.now) {
-        let el = document.getElementById(key);
-        el && (prunedCache[key] = cache.now[key]), el = null;
-      }
+      const prunedCache = createCacheStore();
+      for (const key in cache.now)
+        document.getElementById(key) && (prunedCache[key] = cache.now[key]);
       cache.now = prunedCache, Object.keys(cache.next).length > 0 && (cache.now = {
         ...cache.now,
         ...cache.next
-      }, cache.next = {});
+      }, cache.next = createCacheStore());
     }
     htmx.defineExtension(extension, {
       init: function() {
@@ -116,37 +175,43 @@ class BoosterExt {
         function initCache() {
           saveToCache(document, "now");
         }
-        document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initCache) : initCache();
+        document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initCache, { once: !0 }) : initCache();
       },
       onEvent: function(name, htmxEvent) {
         var _a, _b;
-        if (name === "htmx:beforeSwap") {
-          let incomingDOM = new DOMParser().parseFromString(
-            htmxEvent.detail.xhr.response,
-            "text/html"
-          );
-          incomingDOM && saveToCache(incomingDOM, "next"), incomingDOM = null;
-        }
-        if (name === "htmx:afterSettle" && (htmx.config.currentTargetId = htmxEvent.target.id, factory.refresh()), name === "htmx:historyItemCreated" && htmxEvent.detail.item.content) {
-          let cachedDOM = new DOMParser().parseFromString(
-            htmxEvent.detail.item.content,
-            "text/html"
-          );
-          for (let key in cache.now) {
-            let el = cachedDOM.getElementById(key);
-            el && (el.outerHTML = cache.now[key]), el = null;
+        switch (name) {
+          case "htmx:beforeSwap": {
+            const incomingDOM = parseHTML(htmxEvent.detail.xhr.response);
+            incomingDOM && saveToCache(incomingDOM, "next");
+            break;
           }
-          htmxEvent.detail.item.content = cachedDOM.body.innerHTML, rotateCache();
-        }
-        if (name === "htmx:historyCacheHit" && (cache.hit = !0), name === "htmx:historyRestore") {
-          htmx.config.currentTargetId = null, cache.hit || factory.refresh(), cache.hit = !1;
-          let restored = (_b = (_a = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _a.item) == null ? void 0 : _b.content;
-          if (restored) {
-            let restoredDOM = new DOMParser().parseFromString(
-              restored,
-              "text/html"
-            );
+          case "htmx:beforeHistorySave":
+            factory.beforeUnmount();
+            break;
+          case "htmx:afterSettle":
+            htmx.config.currentTargetId = htmxEvent.target.id, factory.refresh();
+            break;
+          case "htmx:historyItemCreated": {
+            if (!htmxEvent.detail.item.content)
+              break;
+            const cachedDOM = parseHTML(htmxEvent.detail.item.content);
+            if (!cachedDOM)
+              break;
+            for (const key in cache.now) {
+              const el = cachedDOM.getElementById(key);
+              el && (el.outerHTML = cache.now[key]);
+            }
+            htmxEvent.detail.item.content = cachedDOM.body.innerHTML, rotateCache();
+            break;
+          }
+          case "htmx:historyCacheHit":
+            cache.hit = !0;
+            break;
+          case "htmx:historyRestore": {
+            htmx.config.currentTargetId = null, cache.hit || factory.refresh(), cache.hit = !1;
+            const restored = (_b = (_a = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _a.item) == null ? void 0 : _b.content, restoredDOM = parseHTML(restored);
             restoredDOM && saveToCache(restoredDOM, "now");
+            break;
           }
         }
       }
@@ -178,36 +243,15 @@ const event = (requirement) => new Promise((resolve) => {
   }, { rootMargin });
   let elm = document.querySelector(selector);
   elm ? observer.observe(elm) : resolve();
-}) : Promise.resolve(!0);
+}) : Promise.resolve(!0), IGNORED_STRATEGIES = /* @__PURE__ */ new Set(["immediate", "eager"]);
+function parseRequirements(strategy) {
+  return strategy ? strategy.split("|").map((requirement) => requirement.trim()).filter(Boolean).filter((requirement) => !IGNORED_STRATEGIES.has(requirement)) : [];
+}
+function resolveStrategy(requirement, selector) {
+  return requirement.startsWith("event") ? event(requirement) : requirement === "idle" ? idle() : requirement.startsWith("media") ? media(requirement) : requirement.startsWith("visible") ? visible(selector, requirement) : null;
+}
 function loadStrategies(strategy, selector) {
-  let promises = [];
-  if (strategy) {
-    let requirements = strategy.split("|").map((requirement) => requirement.trim()).filter((requirement) => requirement !== "immediate").filter((requirement) => requirement !== "eager");
-    for (let requirement of requirements) {
-      if (requirement.startsWith("event")) {
-        promises.push(
-          event(requirement)
-        );
-        continue;
-      }
-      if (requirement === "idle") {
-        promises.push(
-          idle()
-        );
-        continue;
-      }
-      if (requirement.startsWith("media")) {
-        promises.push(
-          media(requirement)
-        );
-        continue;
-      }
-      requirement.startsWith("visible") && promises.push(
-        visible(selector, requirement)
-      );
-    }
-  }
-  return promises;
+  return parseRequirements(strategy).map((requirement) => resolveStrategy(requirement, selector)).filter(Boolean);
 }
 class BoosterFactory extends Booster {
   constructor(extension = "booster") {
@@ -219,30 +263,46 @@ class BoosterFactory extends Booster {
       origin: location.origin,
       basePath: "scripts/boosts"
     };
-    let configMeta = document.querySelector('meta[name="' + this.extension + '-config"]') ?? null;
-    configMeta && (this.config = {
-      ...this.config,
-      ...JSON.parse(configMeta.content)
-    }), this.config.basePath = this.config.basePath.replace(/^\/|\/$/g, ""), this.mount();
+    const configMeta = document.querySelector(`meta[name="${this.extension}-config"]`);
+    if (configMeta != null && configMeta.content)
+      try {
+        this.config = {
+          ...this.config,
+          ...JSON.parse(configMeta.content)
+        };
+      } catch (error) {
+        console.warn(
+          `Booster Pack: invalid JSON in ${this.extension}-config meta tag. Using defaults.`,
+          error
+        );
+      }
+    this.config.basePath = this.config.basePath.replace(/^\/|\/$/g, ""), this.mount();
   }
   mount() {
-    let targetId = htmx.config.currentTargetId ?? "main", target = document.getElementById(targetId);
-    if (target) {
-      let components = target.querySelectorAll("[data-" + this.extension + "]");
-      for (let el of components)
-        this.lazyload(el);
-      target = null, components = null;
-    }
+    const target = this._getTarget();
+    if (!target)
+      return;
+    const components = target.querySelectorAll(`[data-${this.extension}]`);
+    for (const el of components)
+      this.lazyload(el);
+  }
+  beforeUnmount() {
+    var _a, _b;
+    const target = this._getTarget();
+    if (target)
+      for (let i = this.loaded.length - 1; i >= 0; i--) {
+        const loadedComponent = this.loaded[i];
+        target.querySelector(loadedComponent.selector) && ((_b = (_a = loadedComponent.instance).beforeUnmount) == null || _b.call(_a));
+      }
   }
   unmount() {
-    let targetId = htmx.config.currentTargetId ?? "main", target = document.getElementById(targetId);
-    if (target) {
+    var _a, _b;
+    const target = this._getTarget();
+    if (target)
       for (let i = this.loaded.length - 1; i >= 0; i--) {
-        let inTarget = target.querySelector(this.loaded[i].selector), inDocument = document.querySelector(this.loaded[i].selector);
-        (inTarget || !inDocument) && (this.loaded[i].instance.unmount(), this.loaded.splice(i, 1));
+        const loadedComponent = this.loaded[i], inTarget = target.querySelector(loadedComponent.selector), inDocument = document.querySelector(loadedComponent.selector);
+        (inTarget || !inDocument) && ((_b = (_a = loadedComponent.instance).unmount) == null || _b.call(_a), this.loaded.splice(i, 1));
       }
-      target = null;
-    }
   }
   /**
    * Import a component on demand, optionally using a loading strategy
@@ -250,25 +310,39 @@ class BoosterFactory extends Booster {
    * @param el
    */
   lazyload(el) {
-    let component = el.dataset[this.extension], version = el.dataset.version ?? "1", strategy = el.dataset.load ?? null, selector = el.getAttribute("id") ? "#" + el.getAttribute("id") : null;
-    if (selector === null)
-      return console.warn(`Booster Pack: an instance of ${component} doesn't have an ID attribute. Skipping.`);
-    let promises = loadStrategies(strategy, selector);
-    Promise.all(promises).then(() => {
-      import(
-        /* @vite-ignore */
-        `${this.config.origin}/${this.config.basePath}/${component}.js?v=${version}`
-      ).then(
-        (lazyComponent) => {
-          let instance = new lazyComponent.default(selector);
-          instance.mounted = !0, this.loaded.push({
-            name: component,
-            selector,
-            instance
-          });
-        }
-      );
+    const component = el.dataset[this.extension], version = el.dataset.version ?? "1", strategy = el.dataset.load ?? null, id = el.getAttribute("id");
+    if (!component) {
+      console.warn(`Booster Pack: missing component name for data-${this.extension}. Skipping.`);
+      return;
+    }
+    if (!id) {
+      console.warn(`Booster Pack: an instance of ${component} doesn't have an ID attribute. Skipping.`);
+      return;
+    }
+    const selector = `#${CSS.escape(id)}`;
+    if (this.loaded.some((item) => item.selector === selector))
+      return;
+    const promises = loadStrategies(strategy, selector);
+    Promise.all(promises).then(() => import(
+      /* @vite-ignore */
+      `${this.config.origin}/${this.config.basePath}/${component}.js?v=${version}`
+    )).then((lazyComponent) => {
+      const ComponentClass = lazyComponent.default;
+      if (typeof ComponentClass != "function")
+        throw new TypeError(`Booster Pack: component ${component} does not export a default class.`);
+      const instance = new ComponentClass(selector);
+      instance.mounted = !0, this.loaded.push({
+        name: component,
+        selector,
+        instance
+      });
+    }).catch((error) => {
+      console.error(`Booster Pack: failed to load component ${component}.`, error);
     });
+  }
+  _getTarget() {
+    const targetId = htmx.config.currentTargetId ?? "main";
+    return document.getElementById(targetId);
   }
 }
 class BoosterConductor extends BoosterFactory {
@@ -277,8 +351,9 @@ class BoosterConductor extends BoosterFactory {
     super(extension);
     __publicField(this, "registered", []);
     // ALL registered conductors
-    __publicField(this, "loaded", []);
+    __publicField(this, "loaded", {});
     // Only loaded conductor instances
+    __publicField(this, "loading", {});
     __publicField(this, "cacheHit", !1);
     this.defaults = {
       conductors
@@ -290,15 +365,22 @@ class BoosterConductor extends BoosterFactory {
     });
   }
   mount() {
-    htmx.on("htmx:afterSettle", (htmxEvent) => {
-      htmx.config.currentTargetId = htmxEvent.target.id;
-      for (const [key, entry] of Object.entries(this.registered))
+    htmx.on("htmx:beforeHistorySave", () => {
+      var _a;
+      for (const entry of this.registered) {
+        const conductor = this.loaded[entry.conductor];
+        !conductor || !entry.selector || document.querySelector(entry.selector) && conductor.mounted && ((_a = conductor.beforeUnmount) == null || _a.call(conductor));
+      }
+    }), htmx.on("htmx:afterSettle", (htmxEvent) => {
+      var _a;
+      htmx.config.currentTargetId = ((_a = htmxEvent.target) == null ? void 0 : _a.id) ?? null;
+      for (const entry of this.registered)
         this.lifeCycle(entry);
     }), htmx.on("htmx:historyCacheHit", (htmxEvent) => {
       this.cacheHit = !0;
     }), htmx.on("htmx:historyRestore", (htmxEvent) => {
       if (htmx.config.currentTargetId = null, !this.cacheHit)
-        for (const [key, entry] of Object.entries(this.registered))
+        for (const entry of this.registered)
           this.lifeCycle(entry);
       this.cacheHit = !1;
     });
@@ -311,7 +393,13 @@ class BoosterConductor extends BoosterFactory {
    * @param {object}  entry
    */
   lifeCycle(entry) {
-    entry.conductor in this.loaded ? entry.selector && (document.querySelector(entry.selector) ? this.loaded[entry.conductor].mounted ? this.loaded[entry.conductor].refresh() : (this.loaded[entry.conductor].mount(), this.loaded[entry.conductor].mounted = !0) : this.loaded[entry.conductor].mounted && (this.loaded[entry.conductor].unmount(), this.loaded[entry.conductor].mounted = !1)) : entry.selector ? document.querySelector(entry.selector) && this.lazyload(entry) : this.lazyload(entry);
+    var _a, _b, _c;
+    if (!(entry != null && entry.conductor)) {
+      console.warn("Booster Pack: conductor is missing a name.", entry);
+      return;
+    }
+    const conductor = this.loaded[entry.conductor];
+    conductor ? entry.selector && (document.querySelector(entry.selector) ? conductor.mounted ? (_a = conductor.refresh) == null || _a.call(conductor) : ((_b = conductor.mount) == null || _b.call(conductor), conductor.mounted = !0) : conductor.mounted && ((_c = conductor.unmount) == null || _c.call(conductor), conductor.mounted = !1)) : entry.selector ? document.querySelector(entry.selector) && this.lazyload(entry) : this.lazyload(entry);
   }
   /**
    * Register a conductor
@@ -323,7 +411,11 @@ class BoosterConductor extends BoosterFactory {
    * @param {number}  version
    */
   register(entry, { conductor, selector = null, strategy = "eager", version = 1 } = entry) {
-    this.registered.push(entry), this.lifeCycle(entry);
+    if (!(entry != null && entry.conductor)) {
+      console.warn("Booster Pack: invalid conductor registration.", entry);
+      return;
+    }
+    this.registered.some((registeredEntry) => registeredEntry.conductor === entry.conductor) || (this.registered.push(entry), this.lifeCycle(entry));
   }
   /**
    * Import a conductor and run its constructor
@@ -332,14 +424,23 @@ class BoosterConductor extends BoosterFactory {
    * @param {object}  entry
    */
   lazyload(entry) {
-    let promises = loadStrategies(entry.strategy, entry.selector);
-    Promise.all(promises).then(() => {
-      import(
-        /* @vite-ignore */
-        `${this.config.origin}/${this.config.basePath}/${entry.conductor}.js?v=${entry.version}`
-      ).then((lazyConductor) => {
-        this.loaded[entry.conductor] = new lazyConductor.default(entry.selector), this.loaded[entry.conductor].mounted = !0;
-      });
+    if (this.loaded[entry.conductor] || this.loading[entry.conductor])
+      return;
+    this.loading[entry.conductor] = !0;
+    const promises = loadStrategies(entry.strategy, entry.selector);
+    Promise.all(promises).then(() => import(
+      /* @vite-ignore */
+      `${this.config.origin}/${this.config.basePath}/${entry.conductor}.js?v=${entry.version}`
+    )).then((lazyConductor) => {
+      const ConductorClass = lazyConductor.default;
+      if (typeof ConductorClass != "function")
+        throw new TypeError(`Booster Pack: conductor ${entry.conductor} does not export a default class.`);
+      const conductor = new ConductorClass(entry.selector);
+      conductor.mounted = !0, this.loaded[entry.conductor] = conductor;
+    }).catch((error) => {
+      console.error(`Booster Pack: failed to load conductor ${entry.conductor}.`, error);
+    }).finally(() => {
+      delete this.loading[entry.conductor];
     });
   }
 }
