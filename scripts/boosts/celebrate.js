@@ -1,4 +1,4 @@
-import confetti from 'https://cdn.skypack.dev/canvas-confetti';
+import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/+esm';
 
 export default class Celebrate extends Booster {
 
