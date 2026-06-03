@@ -42,7 +42,7 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 
 1. Include `booster.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
-<script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@2.0.6/src/htmx.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@2.0.10/src/htmx.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.1.3/dist/booster.min.js"></script>
 ```
 
@@ -292,13 +292,22 @@ Reset state in the given scope. If you have used state, call this in the `unmoun
 this.destroyState('component');
 ```
 
-Finally, the `Booster` base class provides the following utility methods:
+Finally, the `Booster` base class provides utility methods for lazyloading third party scripts and stylesheets:
 
 #### css(urls)
 Since ES6 modules running in the browser can’t dynamically import CSS, this method provides a convenient way to load an array of stylesheet URLs, returning a promise. Stylesheets will only be loaded once no matter how many component instances you have, or which pages they appear on.
 
 ```js
 this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
+  this.mount();
+});
+```
+
+#### js(urls)
+Load an array of JavaScript files, which may be convenient when scripts cannot be imported as ECMAScript Modules (ESM). The files will only be loaded once no matter how many component instances you have.
+
+```js
+this.js(['https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js']).then(() => {
   this.mount();
 });
 ```

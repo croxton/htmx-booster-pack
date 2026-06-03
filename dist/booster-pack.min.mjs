@@ -36,10 +36,10 @@ class Booster {
     return console.warn("Booster Pack: you should not get state manually. Use getState() instead."), this._state;
   }
   set state(state) {
-    console.warn("Booster Pack: you should not change state manually. Use setState() instead."), this._state = state || {};
+    console.warn("Booster Pack: you should not change state manually. Use setState() instead."), this._state = this._isPlainObject(state) ? state : {};
   }
   setState(scope = "local", changes = {}) {
-    if (!changes || typeof changes != "object" || Array.isArray(changes))
+    if (!this._isPlainObject(changes))
       return;
     const stateRef = this._getStateRef(scope, !0), stateChanges = {};
     Object.keys(changes).forEach((key) => {
@@ -49,13 +49,14 @@ class Booster {
         return;
       }
       if (this._isPlainObject(nextValue)) {
-        const objectChanges = {};
-        this._isPlainObject(currentValue) ? (Object.keys(nextValue).forEach((subkey) => {
-          currentValue[subkey] !== nextValue[subkey] && (objectChanges[subkey] = nextValue[subkey]);
-        }), Object.keys(objectChanges).length > 0 && (stateRef[key] = {
-          ...currentValue,
-          ...objectChanges
-        }, stateChanges[key] = objectChanges)) : (stateRef[key] = { ...nextValue }, stateChanges[key] = { ...nextValue });
+        if (this._isPlainObject(currentValue)) {
+          const mergedValue = {
+            ...currentValue,
+            ...nextValue
+          };
+          this._objectsAreEqual(currentValue, mergedValue) || (stateRef[key] = mergedValue, stateChanges[key] = { ...nextValue });
+        } else
+          stateRef[key] = { ...nextValue }, stateChanges[key] = { ...nextValue };
         return;
       }
       currentValue !== nextValue && (stateRef[key] = nextValue, stateChanges[key] = nextValue);
@@ -86,20 +87,34 @@ class Booster {
     return Promise.all(list.map((href) => this._loadCSS(href)));
   }
   _loadCSS(href) {
-    return new Promise((resolve, reject) => {
-      if (!href) {
-        resolve();
-        return;
-      }
-      if (Booster._sheets[href]) {
-        Booster._sheets[href].then(resolve).catch(reject);
-        return;
-      }
-      Booster._sheets[href] = new Promise((sheetResolve, sheetReject) => {
-        const link = document.createElement("link");
-        link.type = "text/css", link.rel = "stylesheet", link.href = href, link.onload = sheetResolve, link.onerror = sheetReject, document.head.appendChild(link);
-      }), Booster._sheets[href].then(resolve).catch(reject);
-    });
+    if (!href)
+      return Promise.resolve(!1);
+    if (Booster._sheets[href])
+      return Booster._sheets[href];
+    const existingLink = document.querySelector(`link[rel="stylesheet"][href="${href}"]`);
+    return existingLink ? (Booster._sheets[href] = Promise.resolve(existingLink), Booster._sheets[href]) : (Booster._sheets[href] = new Promise((resolve, reject) => {
+      const link = document.createElement("link");
+      link.type = "text/css", link.rel = "stylesheet", link.href = href, link.onload = () => resolve(link), link.onerror = () => {
+        delete Booster._sheets[href], reject(new Error(`Booster Pack: failed to load stylesheet "${href}".`));
+      }, document.head.appendChild(link);
+    }), Booster._sheets[href]);
+  }
+  js(urls = []) {
+    const list = Array.isArray(urls) ? urls : [urls];
+    return Promise.all(list.map((src) => this._loadJS(src)));
+  }
+  _loadJS(src) {
+    if (!src)
+      return Promise.resolve(!1);
+    if (Booster._scripts[src])
+      return Booster._scripts[src];
+    const existingScript = document.querySelector(`script[src="${src}"]`);
+    return existingScript ? (Booster._scripts[src] = Promise.resolve(existingScript), Booster._scripts[src]) : (Booster._scripts[src] = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.onload = () => resolve(script), script.onerror = () => {
+        delete Booster._scripts[src], reject(new Error(`Booster Pack: failed to load script "${src}".`));
+      }, script.src = src, document.head.appendChild(script);
+    }), Booster._scripts[src]);
   }
   _resolveElement(element) {
     return element ? typeof element == "string" ? document.querySelector(element) : element instanceof Element ? element : null : null;
@@ -109,7 +124,8 @@ class Booster {
     if (!mount || !mount.dataset || !mount.dataset.options)
       return {};
     try {
-      return JSON.parse(mount.dataset.options);
+      const options = JSON.parse(mount.dataset.options);
+      return this._isPlainObject(options) ? options : {};
     } catch (error) {
       return console.warn("Booster Pack: invalid JSON in data-options attribute.", error), {};
     }
@@ -126,11 +142,21 @@ class Booster {
   _arraysAreEqual(first, second) {
     return !Array.isArray(first) || !Array.isArray(second) || first.length !== second.length ? !1 : first.every((item, index) => item === second[index]);
   }
+  _objectsAreEqual(first, second) {
+    if (!this._isPlainObject(first) || !this._isPlainObject(second))
+      return !1;
+    const firstKeys = Object.keys(first), secondKeys = Object.keys(second);
+    return firstKeys.length !== secondKeys.length ? !1 : firstKeys.every((key) => first[key] === second[key]);
+  }
   _isPlainObject(value) {
-    return value !== null && typeof value == "object" && !Array.isArray(value);
+    return value === null || typeof value != "object" ? !1 : Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null;
   }
 }
 Object.defineProperty(Booster, "_sheets", {
+  value: {},
+  writable: !0
+});
+Object.defineProperty(Booster, "_scripts", {
   value: {},
   writable: !0
 });
