@@ -18,7 +18,6 @@ import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 export default class Celebrate extends Booster {
   constructor(elm) {
     super(elm);
-    this.mount();
   }
   mount() {
     confetti();
@@ -43,7 +42,7 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 1. Include `booster.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
 <script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@2.0.10/src/htmx.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.1.3/dist/booster.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.2.0/dist/booster.min.js"></script>
 ```
 
 2. Create a folder in the webroot of your project to store your scripts, e.g. `/scripts/boosts/`. Add a `<meta>` tag and set the `basePath` of your folder:
@@ -68,7 +67,6 @@ export default class Hello extends Booster {
 
   constructor(elm) {
     super(elm);
-    this.mount();
   }
 
   mount() {
@@ -276,7 +274,7 @@ let currentState = this.getState('component', { a:null, b:null });
 ```
 
 #### stateChange(changes)
-Called by the `setState` method, with any changes to state passed as an object and intended to be overridden in your class. An example use of this method would be to perform all DOM manipulation in one place. Note that this can only be used with state changes in the `local` scope.
+Called by the `setState` method, with any changes to state passed as an object and intended to be overridden in your class. An example use of this method would be to perform all DOM manipulation in one place.
 
 ```js
 stateChange(stateChanges) {
@@ -299,7 +297,7 @@ Since ES6 modules running in the browser can’t dynamically import CSS, this me
 
 ```js
 this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
-  this.mount();
+  this.doSomethingElse();
 });
 ```
 
@@ -308,7 +306,7 @@ Load an array of JavaScript files, which may be convenient when scripts cannot b
 
 ```js
 this.js(['https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js']).then(() => {
-  this.mount();
+  this.doSomethingElse();
 });
 ```
 
@@ -331,11 +329,6 @@ export default class MyThing extends Booster {
     this.options = {
       message: "Hi, I'm thing",
     };
-
-    // load CSS files, then mount
-    this.css(['myStylesheet.css']).then(() => {
-      this.mount();
-    });
   }
 
   mount() {
@@ -446,6 +439,8 @@ Use like this:
 import { Booster, BoosterExt, BoosterFactory, BoosterConductor, loadStrategies } from 'htmx-booster-pack';
 ```
 
+### Custom component factory
+
 You'll need to write your own factory to make components, so that your bundler can do code splitting and file hashing. See [/lib/boosterFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/boosterFactory.js) for an example.
 
 Pass your factory to the extension to load it. The extension name is passed as the second parameter (if you want to change it from the default, 'booster'):
@@ -453,6 +448,7 @@ Pass your factory to the extension to load it. The extension name is passed as t
 ```js
 // Create a custom htmx extension with the name 'custom-booster', 
 // matching elements with the attribute 'data-custom-booster'
+import ComponentFactory from './componentFactory';
 new BoosterExt(MyCustomFactory, 'custom-booster');
 ```
 
@@ -462,7 +458,7 @@ Full example for Vite:
 import { BoosterExt, BoosterFactory, loadStrategies } from 'htmx-booster-pack';
 
 // Your custom factory
-class MyCustomFactory extends BoosterFactory {
+class ComponentFactory extends BoosterFactory {
   
   constructor(extension='booster') {
     super(extension);
@@ -491,6 +487,12 @@ class MyCustomFactory extends BoosterFactory {
         (lazyComponent) => {
           let instance = new lazyComponent.default(selector);
           instance.mounted = true;
+          try {
+            instance.mount?.();
+          } catch (error) {
+            instance.mounted = false;
+            throw error;
+          }
           this.loaded.push({
             name: component,
             selector: selector,
@@ -509,6 +511,53 @@ new BoosterExt(MyCustomFactory, 'custom-booster');
 ```
 
 You can get creative with the types of component Booster Pack makes. Here's an example of a [custom factory](https://github.com/croxton/craftcms-hda-starter-kit/blob/main/src/scripts/framework/factory.js) that also makes Vue SFCs.
+
+### Custom conductor factory
+
+Similarly, you will need to write your own factory to make conductors if you want to take advantage of code-splitting and file hashing. See [/lib/conductorFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/conductorFactory.js) for an example.
+
+```js
+import ConductorFactory from './conductorFactory';
+new ConductorFactory('custom-booster', [
+  { conductor: 'unveil', selector: '[data-unveil]', strategy: 'eager' },
+  { conductor: "scrollAnimation", selector: "[data-sal]", strategy: "eager" }
+]);
+```
+
+Full example for Vite:
+
+```js
+import { BoosterConductor, loadStrategies } from 'htmx-booster-pack';
+
+export default class ConductorFactory extends BoosterConductor {
+  constructor(extension = 'booster', conductors = []) {
+    super(extension, conductors);
+  }
+
+  /**
+   * Import a conductor and run its constructor
+   * We'll use lazy loading for the chunk file
+   *
+   * @param {object}  entry
+   */
+  lazyload(entry) {
+    let promises = loadStrategies(entry.strategy, entry.selector);
+    Promise.all(promises).then(() => {
+      import(`../components/local/${entry.conductor}.js`).then((lazyConductor) => {
+        this.loaded[entry.conductor] = new lazyConductor.default(entry.selector);
+        this.loaded[entry.conductor].mounted = true;
+        try {
+          this.loaded[entry.conductor].mount?.();
+        } catch (error) {
+          this.loaded[entry.conductor].mounted = false;
+          throw error;
+        }
+      });
+    });
+  }
+}
+```
+
 
 ## Thank you
 

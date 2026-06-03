@@ -6,7 +6,6 @@ export default class Celebrate extends Booster {
 
   constructor(elm) {
     super(elm);
-    this.mount();
   }
 
   mount() {

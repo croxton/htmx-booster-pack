@@ -3,10 +3,10 @@ export default class Share extends Booster {
 
   constructor(elm) {
     super(elm);
-    this.mount();
   }
 
   mount() {
+
     this.shareMount = document.querySelector(this.elm);
 
     // default options
@@ -66,7 +66,9 @@ export default class Share extends Booster {
             return;
           });
       });
-      element.appendChild(shareButton);
+      const shareLi = this.h('li');
+      shareLi.appendChild(shareButton);
+      element.appendChild(shareLi);
     } else {
       this.options.share.forEach((option) => {
         let shareLink;
@@ -113,7 +115,7 @@ export default class Share extends Booster {
     }
   }
 
-  h(type, attributes, children = []) {
+  h(type, attributes = {}, children = []) {
     const element = document.createElement(type);
 
     for (let key in attributes) {
@@ -133,11 +135,11 @@ export default class Share extends Booster {
   }
 
   unmount() {
-
     // reset element, this removes any event listeners we added
-    this.shareMount.innerHTML = null;
-
-    // remove dom reference
-    this.shareMount = null;
+    if (this.shareMount) {
+      this.shareMount.innerHTML = '';
+      // remove dom reference
+      this.shareMount = null;
+    }
   }
 }

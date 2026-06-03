@@ -37,18 +37,23 @@ export default class VideoPlayer extends Booster {
 
   constructor(elm) {
     super(elm);
-    this.videoMount = document.querySelector(elm);
-    this.videoPlayer = this.videoMount.querySelector('.c-video__player');
-
-    // load CSS and mount
-    this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
-      this.mount();
-    });
   }
 
   mount() {
+    // load CSS and mount
+    this.css(['https://cdn.plyr.io/3.7.8/plyr.css']).then(() => {
+      if (!document.querySelector(this.elm)) {
+        return;
+      }
+      this.initVideo();
+    });
+  }
 
-    // lazy load videos entering the viewport
+  initVideo() {
+
+    this.videoMount = document.querySelector(this.elm);
+    this.videoPlayer = this.videoMount.querySelector('.c-video__player');
+
     let videoBtn = this.videoMount.querySelector('.c-video__btn');
     let video, track, srcWebm, srcMp4, srcVimeo, srcYoutube;
 
@@ -177,10 +182,10 @@ export default class VideoPlayer extends Booster {
 
     // remove the markup we added to the video player container
     // this will also remove any event listeners attached to it
-    this.videoPlayer.innerHTML = null;
+    this.videoPlayer.innerHTML = '';
 
     // remove Plyr instance
-    this.playerInstance.destroy();
+    this.playerInstance?.destroy();
 
     // reset state
     this.destroyState('component');
