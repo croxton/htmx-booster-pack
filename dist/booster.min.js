@@ -321,7 +321,7 @@ class BoosterFactory extends Booster {
   constructor(extension = "booster") {
     super();
     __publicField(this, "loaded", []);
-    __publicField(this, "loading", /* @__PURE__ */ new Set());
+    __publicField(this, "loading", []);
     __publicField(this, "config", {});
     __publicField(this, "extension", "");
     this.extension = extension, this.config = {
@@ -371,13 +371,14 @@ class BoosterFactory extends Booster {
           target
         }));
       }
-      this.loading.forEach((selector) => {
-        const inTarget = this._isWithinTarget(target, selector), inDocument = document.querySelector(selector);
+      for (let i = this.loading.length - 1; i >= 0; i--) {
+        const selector = this.loading[i], inTarget = this._isWithinTarget(target, selector), inDocument = document.querySelector(selector);
         (inTarget || !inDocument) && this.publish("booster:detached", {
           selector,
           target
         });
-      }), this.loading.clear();
+      }
+      this.loading = [];
     }
   }
   /**
@@ -414,9 +415,9 @@ class BoosterFactory extends Booster {
       return;
     }
     const selector = `#${CSS.escape(id)}`;
-    if (this.loaded.some((item) => item.selector === selector) || this.loading.has(selector))
+    if (this.loaded.some((item) => item.selector === selector) || this.loading.includes(selector))
       return;
-    this.loading.add(selector);
+    this.loading.push(selector);
     const promises = loadStrategies(strategy, selector);
     Promise.all(promises).then(() => {
       if (!document.querySelector(selector))
@@ -450,7 +451,7 @@ class BoosterFactory extends Booster {
     }).catch((error) => {
       console.error(`Booster Pack: failed to load component ${component}.`, error);
     }).finally(() => {
-      this.loading.delete(selector);
+      this.loading = this.loading.filter((item) => item !== selector);
     });
   }
   /**
@@ -476,9 +477,9 @@ class BoosterConductor extends BoosterFactory {
     super(extension);
     __publicField(this, "registered", []);
     // ALL registered conductors
-    __publicField(this, "loaded", {});
+    __publicField(this, "loaded", []);
     // Only loaded conductor instances
-    __publicField(this, "loading", /* @__PURE__ */ new Set());
+    __publicField(this, "loading", []);
     __publicField(this, "cacheHit", !1);
     this.defaults = {
       conductors
@@ -576,9 +577,9 @@ class BoosterConductor extends BoosterFactory {
       console.warn(`Booster Pack: invalid conductor name "${entry.conductor}". Skipping.`);
       return;
     }
-    if (this.loaded[entry.conductor] || this.loading.has(entry.conductor))
+    if (this.loaded[entry.conductor] || this.loading.includes(entry.conductor))
       return;
-    this.loading.add(entry.conductor);
+    this.loading.push(entry.conductor);
     const promises = loadStrategies(entry.strategy, entry.selector);
     Promise.all(promises).then(() => {
       const url = new URL(`${this.config.basePath}/${entry.conductor}.js`, this.config.origin);
@@ -604,7 +605,7 @@ class BoosterConductor extends BoosterFactory {
     }).catch((error) => {
       console.error(`Booster Pack: failed to load conductor ${entry.conductor}.`, error);
     }).finally(() => {
-      this.loading.delete(entry.conductor);
+      this.loading = this.loading.filter((item) => item !== entry.conductor);
     });
   }
 }
