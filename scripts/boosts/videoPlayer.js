@@ -33,7 +33,6 @@ export default class VideoPlayer extends Booster {
   videoMount = null;
   videoPlayer = null;
   playerInstance = null;
-  playerSubscriber = null;
 
   constructor(elm) {
     super(elm);
@@ -178,14 +177,19 @@ export default class VideoPlayer extends Booster {
     this.playerInstance = player;
   }
 
-  unmount() {
-
-    // remove the markup we added to the video player container
-    // this will also remove any event listeners attached to it
-    this.videoPlayer.innerHTML = '';
-
-    // remove Plyr instance
+  beforeUnmount() {
+    if (this.videoPlayer) {
+      let video = this.videoPlayer.querySelector('video');
+      if (video) {
+        // remove buffer to release memory
+        video.removeAttribute('src');
+      }
+    }
+    // destroy the Plyr instance
     this.playerInstance?.destroy();
+  }
+
+  unmount() {
 
     // reset state
     this.destroyState('component');

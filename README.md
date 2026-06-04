@@ -135,7 +135,7 @@ Not boosting? No problem. Your scripts will still be dynamically imported and us
 Every component instance must have a unique id. If you reuse a component multiple times in the same document, make sure all have unique id attributes.
 
 ### data-booster
-The name of your component. No spaces or hyphens, but camelCase is fine. This must match the filename of your script.
+The name of your component. The name must be alphanumeric, no spaces, underscores, or hyphens. This must match the filename of your script.
 
 ### data-load
 The loading strategy to use for the component instance. See [Loading strategies](https://github.com/croxton/htmx-booster-pack#loading-strategies) below.
@@ -168,7 +168,7 @@ A JSON formatted string of options to pass to your component.
 When a component instance is reinitialised on history restore (the user navigates to a page using the browser’s back/forward buttons), the `innerHTML` is automatically reset to its original state, so that your script always has the same markup to work with when it mounts. However, this may not be the desired behaviour when you are appending to the original markup (for example, adding new rows to a table) - in which case you can disable this feature with `data-reset="false"`.
 
 ### data-version
-A versioning string or hash that will be appended to your script, for cache-busting.
+An alphanumeric versioning string / hash that will be appended to your script, for cache-busting.
 
 ## The `Booster` class
 
@@ -370,7 +370,7 @@ export default class MyThing extends Booster {
 
 ### Conductors
 
-Conductors are a special type of Booster class for managing **multiple** elements matching a selector, rather than being attached to individual elements via `data-booster=""` attributes. They can be a more efficient way to coordinate the behaviour of groups of separated elements, such as lazy loading images, or updating the active state of navigation menus. To register a conductor add a `conductors` array to your meta tag. Specify the conductor name, CSS selector, loading strategy and version for each conductor you want to register. A conductor is loaded and mounted using the specified strategy when its selector is detected in the dom, and unmounted (but not destroyed) when it is no longer found in the dom; as such, conductors are stateful - they retain any properties that you set on the class regardless of mount/unmount lifecycles, unless you destroy the properties in `unmount()`. Conductors are also not bound to a htmx target, so mounted conductors will be "refreshed" (unmount/mount) on every swap, if the selector remains in the dom after the swap.
+Conductors are a special type of Booster class for managing **multiple** elements matching a selector, rather than being attached to individual elements via `data-booster=""` attributes. They can be a more efficient way to coordinate the behaviour of groups of separated elements, such as lazy loading images, or updating the active state of navigation menus. To register a conductor add a `conductors` array to your meta tag. Specify the conductor name, CSS selector, loading strategy, and version for each conductor you want to register. A conductor is loaded and mounted using the specified strategy when its selector is detected in the dom, and unmounted (but not destroyed) when it is no longer found in the dom; as such, conductors are stateful - they retain any properties that you set on the class regardless of mount/unmount lifecycles, unless you destroy the properties in `unmount()`. Conductors are also not bound to a htmx target, so mounted conductors will be "refreshed" (unmount/mount) on every swap, if the selector remains in the dom after the swap.
 ```html
 <meta name="booster-config" content='{
       "basePath" : "/scripts/boosts/",
@@ -449,7 +449,7 @@ Pass your factory to the extension to load it. The extension name is passed as t
 // Create a custom htmx extension with the name 'custom-booster', 
 // matching elements with the attribute 'data-custom-booster'
 import ComponentFactory from './componentFactory';
-new BoosterExt(MyCustomFactory, 'custom-booster');
+new BoosterExt(ComponentFactory, 'custom-booster');
 ```
 
 Full example for Vite:
@@ -514,7 +514,7 @@ You can get creative with the types of component Booster Pack makes. Here's an e
 
 ### Custom conductor factory
 
-Similarly, you will need to write your own factory to make conductors if you want to take advantage of code-splitting and file hashing. See [/lib/conductorFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/conductorFactory.js) for an example.
+Similarly, you will need to write your own factory to make conductors if you want to take advantage of code-splitting and file hashing. See [/lib/conductorFactory.js](https://github.com/croxton/htmx-booster-pack/blob/main/lib/boosterConductor.js) for an example.
 
 ```js
 import ConductorFactory from './conductorFactory';
