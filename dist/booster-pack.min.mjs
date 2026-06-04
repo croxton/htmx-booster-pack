@@ -204,11 +204,11 @@ class BoosterExt {
         document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initCache, { once: !0 }) : initCache();
       },
       onEvent: function(name, htmxEvent) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i;
         switch (name) {
           case "htmx:beforeSwap": {
             const incomingDOM = parseHTML((_b = (_a = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _a.xhr) == null ? void 0 : _b.response);
-            incomingDOM && saveToCache(incomingDOM, "next"), (_c = factory == null ? void 0 : factory.beforeUnmount) == null || _c.call(factory);
+            incomingDOM && saveToCache(incomingDOM, "next"), (_c = factory == null ? void 0 : factory.beforeUnmount) == null || _c.call(factory), cache.cleanup = !0;
             break;
           }
           case "htmx:afterSettle":
@@ -227,12 +227,15 @@ class BoosterExt {
             htmxEvent.detail.item.content = cachedDOM.body.innerHTML, rotateCache();
             break;
           }
+          case "htmx:beforeHistorySave":
+            cache.cleanup || ((_f = factory == null ? void 0 : factory.beforeUnmount) == null || _f.call(factory), cache.cleanup = !0);
+            break;
           case "htmx:historyCacheHit":
-            cache.hit = !0, (_f = factory == null ? void 0 : factory.beforeUnmount) == null || _f.call(factory);
+            cache.hit = !0;
             break;
           case "htmx:historyRestore": {
-            htmx.config.currentTargetId = null, cache.hit || ((_g = factory == null ? void 0 : factory.beforeUnmount) == null || _g.call(factory), (_h = factory == null ? void 0 : factory.refresh) == null || _h.call(factory)), cache.hit = !1;
-            const restored = (_j = (_i = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _i.item) == null ? void 0 : _j.content, restoredDOM = parseHTML(restored);
+            htmx.config.currentTargetId = null, cache.hit || (_g = factory == null ? void 0 : factory.refresh) == null || _g.call(factory), cache.hit = !1;
+            const restored = (_i = (_h = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _h.item) == null ? void 0 : _i.content, restoredDOM = parseHTML(restored);
             restoredDOM && saveToCache(restoredDOM, "now");
             break;
           }
