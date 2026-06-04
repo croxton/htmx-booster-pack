@@ -22,12 +22,10 @@ class Booster {
     };
   }
   mount() {
-    this.mounted || (this.mounted = !0);
   }
   beforeUnmount() {
   }
   unmount() {
-    this.mounted && (this.mounted = !1);
   }
   refresh() {
     this.unmount(), this.mount();
@@ -91,7 +89,7 @@ class Booster {
       return Promise.resolve(!1);
     if (Booster._sheets[href])
       return Booster._sheets[href];
-    const existingLink = document.querySelector(`link[rel="stylesheet"][href="${href}"]`);
+    const existingLink = [...document.querySelectorAll('link[rel="stylesheet"]')].find((link) => link.href === href || link.getAttribute("href") === href);
     return existingLink ? (Booster._sheets[href] = Promise.resolve(existingLink), Booster._sheets[href]) : (Booster._sheets[href] = new Promise((resolve, reject) => {
       const link = document.createElement("link");
       link.type = "text/css", link.rel = "stylesheet", link.href = href, link.onload = () => resolve(link), link.onerror = () => {
@@ -108,7 +106,7 @@ class Booster {
       return Promise.resolve(!1);
     if (Booster._scripts[src])
       return Booster._scripts[src];
-    const existingScript = document.querySelector(`script[src="${src}"]`);
+    const existingScript = [...document.querySelectorAll("script")].find((script) => script.src === src || script.getAttribute("src") === src);
     return existingScript ? (Booster._scripts[src] = Promise.resolve(existingScript), Booster._scripts[src]) : (Booster._scripts[src] = new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.onload = () => resolve(script), script.onerror = () => {
@@ -166,6 +164,8 @@ Object.defineProperty(Booster, "_globalState", {
 });
 class BoosterExt {
   constructor(factoryClass, extension) {
+    if (!/^[a-zA-Z][\w-]*$/.test(extension))
+      throw new Error(`Booster Pack: invalid extension name "${extension}".`);
     let factory;
     const parser = new DOMParser();
     let cache = {
@@ -204,18 +204,15 @@ class BoosterExt {
         document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initCache, { once: !0 }) : initCache();
       },
       onEvent: function(name, htmxEvent) {
-        var _a, _b;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
         switch (name) {
           case "htmx:beforeSwap": {
-            const incomingDOM = parseHTML(htmxEvent.detail.xhr.response);
-            incomingDOM && saveToCache(incomingDOM, "next");
+            const incomingDOM = parseHTML((_b = (_a = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _a.xhr) == null ? void 0 : _b.response);
+            incomingDOM && saveToCache(incomingDOM, "next"), (_c = factory == null ? void 0 : factory.beforeUnmount) == null || _c.call(factory);
             break;
           }
-          case "htmx:beforeHistorySave":
-            factory.beforeUnmount();
-            break;
           case "htmx:afterSettle":
-            htmx.config.currentTargetId = htmxEvent.target.id, factory.refresh();
+            htmx.config.currentTargetId = ((_d = htmxEvent.target) == null ? void 0 : _d.id) || "main", (_e = factory == null ? void 0 : factory.refresh) == null || _e.call(factory);
             break;
           case "htmx:historyItemCreated": {
             if (!htmxEvent.detail.item.content)
@@ -231,11 +228,11 @@ class BoosterExt {
             break;
           }
           case "htmx:historyCacheHit":
-            cache.hit = !0;
+            cache.hit = !0, (_f = factory == null ? void 0 : factory.beforeUnmount) == null || _f.call(factory);
             break;
           case "htmx:historyRestore": {
-            htmx.config.currentTargetId = null, cache.hit || factory.refresh(), cache.hit = !1;
-            const restored = (_b = (_a = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _a.item) == null ? void 0 : _b.content, restoredDOM = parseHTML(restored);
+            htmx.config.currentTargetId = null, cache.hit || ((_g = factory == null ? void 0 : factory.beforeUnmount) == null || _g.call(factory), (_h = factory == null ? void 0 : factory.refresh) == null || _h.call(factory)), cache.hit = !1;
+            const restored = (_j = (_i = htmxEvent == null ? void 0 : htmxEvent.detail) == null ? void 0 : _i.item) == null ? void 0 : _j.content, restoredDOM = parseHTML(restored);
             restoredDOM && saveToCache(restoredDOM, "now");
             break;
           }
@@ -244,37 +241,78 @@ class BoosterExt {
     });
   }
 }
-const event = (requirement) => new Promise((resolve) => {
+const event = (selector = null, requirement) => new Promise((resolve) => {
   let topic;
   if (requirement.indexOf("(") !== -1) {
     const topicStart = requirement.indexOf("(") + 1;
-    topic = requirement.slice(topicStart, -1);
+    topic = requirement.slice(topicStart, -1).trim();
   }
-  topic ? document.body.addEventListener(topic, () => {
+  if (topic) {
+    const cleanup = () => {
+      window.removeEventListener(topic, onEvent), window.removeEventListener("booster:detached", onDetach);
+    }, onEvent = (event2) => {
+      cleanup(), resolve();
+    };
+    window.addEventListener(topic, onEvent);
+    const onDetach = (event2) => {
+      event2.detail.selector === selector && (cleanup(), resolve(!1));
+    };
+    window.addEventListener("booster:detached", onDetach);
+  } else
     resolve();
-  }, { once: !0 }) : resolve();
 }), idle = () => new Promise((resolve) => {
   "requestIdleCallback" in window ? window.requestIdleCallback(resolve) : setTimeout(resolve, 200);
-}), media = (requirement) => new Promise((resolve) => {
-  const queryStart = requirement.indexOf("("), query = requirement.slice(queryStart), mediaQuery = window.matchMedia(query);
-  mediaQuery.matches ? resolve() : mediaQuery.addEventListener("change", resolve, { once: !0 });
-}), visible = (selector = null, requirement) => selector ? new Promise((resolve) => {
+}), media = (selector = null, requirement) => new Promise((resolve) => {
+  const queryStart = requirement.indexOf("(");
+  if (queryStart === -1) {
+    resolve();
+    return;
+  }
+  const query = requirement.slice(queryStart).trim(), mediaQuery = window.matchMedia(query);
+  if (mediaQuery.matches)
+    resolve();
+  else {
+    const cleanup = () => {
+      mediaQuery.removeEventListener("change", onChange), window.removeEventListener("booster:detached", onDetach);
+    }, onChange = (event2) => {
+      event2.matches && (cleanup(), resolve());
+    };
+    mediaQuery.addEventListener("change", onChange);
+    const onDetach = (event2) => {
+      event2.detail.selector === selector && (cleanup(), resolve(!1));
+    };
+    window.addEventListener("booster:detached", onDetach);
+  }
+}), visible = (selector = null, requirement) => selector ? new Promise((resolve, reject) => {
+  let intersectionObserver = null;
+  const cleanup = () => {
+    intersectionObserver && intersectionObserver.disconnect(), window.removeEventListener("booster:detached", onDetach);
+  }, onDetach = (event2) => {
+    event2.detail.selector === selector && (cleanup(), resolve(!1));
+  };
+  if (window.addEventListener("booster:detached", onDetach), !("IntersectionObserver" in window)) {
+    cleanup(), resolve();
+    return;
+  }
   let rootMargin = "0px 0px 0px 0px";
   if (requirement.indexOf("(") !== -1) {
     const rootMarginStart = requirement.indexOf("(") + 1;
-    rootMargin = requirement.slice(rootMarginStart, -1);
+    rootMargin = requirement.slice(rootMarginStart, -1).trim();
   }
-  const observer = new IntersectionObserver((entries) => {
-    entries[0].isIntersecting && (observer.disconnect(), resolve());
-  }, { rootMargin });
-  let elm = document.querySelector(selector);
-  elm ? observer.observe(elm) : resolve();
+  const elm = document.querySelector(selector);
+  if (!elm) {
+    cleanup(), resolve();
+    return;
+  }
+  intersectionObserver = new IntersectionObserver((entries) => {
+    entries[0].isIntersecting && (cleanup(), resolve());
+  }, { rootMargin }), intersectionObserver.observe(elm);
 }) : Promise.resolve(!0), IGNORED_STRATEGIES = /* @__PURE__ */ new Set(["immediate", "eager"]);
 function parseRequirements(strategy) {
   return strategy ? strategy.split("|").map((requirement) => requirement.trim()).filter(Boolean).filter((requirement) => !IGNORED_STRATEGIES.has(requirement)) : [];
 }
 function resolveStrategy(requirement, selector) {
-  return requirement.startsWith("event") ? event(requirement) : requirement === "idle" ? idle() : requirement.startsWith("media") ? media(requirement) : requirement.startsWith("visible") ? visible(selector, requirement) : null;
+  return requirement.startsWith("event") ? event(selector, requirement) : requirement === "idle" ? idle() : requirement.startsWith("media") ? media(selector, requirement) : requirement.startsWith("visible") ? visible(selector, requirement) : null;
 }
 function loadStrategies(strategy, selector) {
   return parseRequirements(strategy).map((requirement) => resolveStrategy(requirement, selector)).filter(Boolean);
@@ -283,6 +321,7 @@ class BoosterFactory extends Booster {
   constructor(extension = "booster") {
     super();
     __publicField(this, "loaded", []);
+    __publicField(this, "loading", /* @__PURE__ */ new Set());
     __publicField(this, "config", {});
     __publicField(this, "extension", "");
     this.extension = extension, this.config = {
@@ -318,17 +357,38 @@ class BoosterFactory extends Booster {
     if (target)
       for (let i = this.loaded.length - 1; i >= 0; i--) {
         const loadedComponent = this.loaded[i];
-        target.querySelector(loadedComponent.selector) && ((_b = (_a = loadedComponent.instance).beforeUnmount) == null || _b.call(_a));
+        this._isWithinTarget(target, loadedComponent.selector) && ((_b = (_a = loadedComponent.instance).beforeUnmount) == null || _b.call(_a));
       }
   }
   unmount() {
     var _a, _b;
     const target = this._getTarget();
-    if (target)
+    if (target) {
       for (let i = this.loaded.length - 1; i >= 0; i--) {
-        const loadedComponent = this.loaded[i], inTarget = target.querySelector(loadedComponent.selector), inDocument = document.querySelector(loadedComponent.selector);
-        (inTarget || !inDocument) && ((_b = (_a = loadedComponent.instance).unmount) == null || _b.call(_a), this.loaded.splice(i, 1));
+        const loadedComponent = this.loaded[i], inTarget = this._isWithinTarget(target, loadedComponent.selector), inDocument = document.querySelector(loadedComponent.selector);
+        (inTarget || !inDocument) && ((_b = (_a = loadedComponent.instance).unmount) == null || _b.call(_a), this.loaded.splice(i, 1), this.publish("booster:detached", {
+          selector: loadedComponent.selector,
+          target
+        }));
       }
+      this.loading.forEach((selector) => {
+        const inTarget = this._isWithinTarget(target, selector), inDocument = document.querySelector(selector);
+        (inTarget || !inDocument) && this.publish("booster:detached", {
+          selector,
+          target
+        });
+      }), this.loading.clear();
+    }
+  }
+  /**
+   * Emit a custom event
+   *
+   * @param eventName
+   * @param detail
+   */
+  publish(eventName, detail) {
+    const event2 = new CustomEvent(eventName, { detail });
+    window.dispatchEvent(event2);
   }
   /**
    * Import a component on demand, optionally using a loading strategy
@@ -341,34 +401,73 @@ class BoosterFactory extends Booster {
       console.warn(`Booster Pack: missing component name for data-${this.extension}. Skipping.`);
       return;
     }
+    if (!/^[A-Za-z0-9]+$/.test(component)) {
+      console.warn(`Booster Pack: invalid component name "${component}". Skipping.`);
+      return;
+    }
+    if (!/^[A-Za-z0-9]+$/.test(version)) {
+      console.warn(`Booster Pack: invalid version string for "${component}". Skipping.`);
+      return;
+    }
     if (!id) {
       console.warn(`Booster Pack: an instance of ${component} doesn't have an ID attribute. Skipping.`);
       return;
     }
     const selector = `#${CSS.escape(id)}`;
-    if (this.loaded.some((item) => item.selector === selector))
+    if (this.loaded.some((item) => item.selector === selector) || this.loading.has(selector))
       return;
+    this.loading.add(selector);
     const promises = loadStrategies(strategy, selector);
-    Promise.all(promises).then(() => import(
-      /* @vite-ignore */
-      `${this.config.origin}/${this.config.basePath}/${component}.js?v=${version}`
-    )).then((lazyComponent) => {
+    Promise.all(promises).then(() => {
+      if (!document.querySelector(selector))
+        return null;
+      const url = new URL(`${this.config.basePath}/${component}.js`, this.config.origin);
+      return url.searchParams.set("v", version), import(
+        /* @vite-ignore */
+        url.href
+      );
+    }).then((lazyComponent) => {
+      var _a;
+      if (!lazyComponent)
+        return;
       const ComponentClass = lazyComponent.default;
       if (typeof ComponentClass != "function")
         throw new TypeError(`Booster Pack: component ${component} does not export a default class.`);
+      if (!document.querySelector(selector))
+        return;
       const instance = new ComponentClass(selector);
-      instance.mounted = !0, this.loaded.push({
+      instance.mounted = !0;
+      try {
+        (_a = instance.mount) == null || _a.call(instance);
+      } catch (error) {
+        throw instance.mounted = !1, error;
+      }
+      this.loaded.push({
         name: component,
         selector,
         instance
       });
     }).catch((error) => {
       console.error(`Booster Pack: failed to load component ${component}.`, error);
+    }).finally(() => {
+      this.loading.delete(selector);
     });
   }
+  /**
+   * Get the current swap target
+   */
   _getTarget() {
     const targetId = htmx.config.currentTargetId ?? "main";
     return document.getElementById(targetId);
+  }
+  /**
+   * Check if a component is within the swap target
+   *
+   * @param target The swap target
+   * @param selector The component selector
+   */
+  _isWithinTarget(target, selector) {
+    return target.matches(selector) || !!target.querySelector(selector);
   }
 }
 class BoosterConductor extends BoosterFactory {
@@ -379,7 +478,7 @@ class BoosterConductor extends BoosterFactory {
     // ALL registered conductors
     __publicField(this, "loaded", {});
     // Only loaded conductor instances
-    __publicField(this, "loading", {});
+    __publicField(this, "loading", /* @__PURE__ */ new Set());
     __publicField(this, "cacheHit", !1);
     this.defaults = {
       conductors
@@ -391,25 +490,33 @@ class BoosterConductor extends BoosterFactory {
     });
   }
   mount() {
-    htmx.on("htmx:beforeHistorySave", () => {
-      var _a;
-      for (const entry of this.registered) {
-        const conductor = this.loaded[entry.conductor];
-        !conductor || !entry.selector || document.querySelector(entry.selector) && conductor.mounted && ((_a = conductor.beforeUnmount) == null || _a.call(conductor));
-      }
+    htmx.on("htmx:beforeSwap", () => {
+      this.beforeUnmount();
     }), htmx.on("htmx:afterSettle", (htmxEvent) => {
       var _a;
       htmx.config.currentTargetId = ((_a = htmxEvent.target) == null ? void 0 : _a.id) ?? null;
       for (const entry of this.registered)
         this.lifeCycle(entry);
     }), htmx.on("htmx:historyCacheHit", (htmxEvent) => {
-      this.cacheHit = !0;
+      this.cacheHit = !0, this.beforeUnmount();
     }), htmx.on("htmx:historyRestore", (htmxEvent) => {
-      if (htmx.config.currentTargetId = null, !this.cacheHit)
+      if (htmx.config.currentTargetId = null, !this.cacheHit) {
+        this.beforeUnmount();
         for (const entry of this.registered)
           this.lifeCycle(entry);
+      }
       this.cacheHit = !1;
     });
+  }
+  beforeUnmount() {
+    var _a;
+    for (const entry of this.registered) {
+      const conductor = this.loaded[entry.conductor];
+      !conductor || !entry.selector || document.querySelector(entry.selector) && (conductor.mounted && ((_a = conductor.beforeUnmount) == null || _a.call(conductor)), this.publish("booster:detached", {
+        selector: entry.selector,
+        target: htmx.config.currentTargetId
+      }));
+    }
   }
   unmount() {
   }
@@ -425,7 +532,22 @@ class BoosterConductor extends BoosterFactory {
       return;
     }
     const conductor = this.loaded[entry.conductor];
-    conductor ? entry.selector && (document.querySelector(entry.selector) ? conductor.mounted ? (_a = conductor.refresh) == null || _a.call(conductor) : ((_b = conductor.mount) == null || _b.call(conductor), conductor.mounted = !0) : conductor.mounted && ((_c = conductor.unmount) == null || _c.call(conductor), conductor.mounted = !1)) : entry.selector ? document.querySelector(entry.selector) && this.lazyload(entry) : this.lazyload(entry);
+    if (conductor) {
+      if (entry.selector)
+        if (document.querySelector(entry.selector))
+          if (conductor.mounted)
+            (_a = conductor.refresh) == null || _a.call(conductor);
+          else {
+            conductor.mounted = !0;
+            try {
+              (_b = conductor.mount) == null || _b.call(conductor);
+            } catch (error) {
+              throw conductor.mounted = !1, error;
+            }
+          }
+        else conductor.mounted && ((_c = conductor.unmount) == null || _c.call(conductor), conductor.mounted = !1);
+    } else
+      entry.selector ? document.querySelector(entry.selector) && this.lazyload(entry) : this.lazyload(entry);
   }
   /**
    * Register a conductor
@@ -450,23 +572,39 @@ class BoosterConductor extends BoosterFactory {
    * @param {object}  entry
    */
   lazyload(entry) {
-    if (this.loaded[entry.conductor] || this.loading[entry.conductor])
+    if (!/^[A-Za-z0-9]+$/.test(entry.conductor)) {
+      console.warn(`Booster Pack: invalid conductor name "${entry.conductor}". Skipping.`);
       return;
-    this.loading[entry.conductor] = !0;
+    }
+    if (this.loaded[entry.conductor] || this.loading.has(entry.conductor))
+      return;
+    this.loading.add(entry.conductor);
     const promises = loadStrategies(entry.strategy, entry.selector);
-    Promise.all(promises).then(() => import(
-      /* @vite-ignore */
-      `${this.config.origin}/${this.config.basePath}/${entry.conductor}.js?v=${entry.version}`
-    )).then((lazyConductor) => {
+    Promise.all(promises).then(() => {
+      const url = new URL(`${this.config.basePath}/${entry.conductor}.js`, this.config.origin);
+      return url.searchParams.set("v", entry.version), import(
+        /* @vite-ignore */
+        url.href
+      );
+    }).then((lazyConductor) => {
+      var _a;
       const ConductorClass = lazyConductor.default;
       if (typeof ConductorClass != "function")
         throw new TypeError(`Booster Pack: conductor ${entry.conductor} does not export a default class.`);
+      if (entry.selector && !document.querySelector(entry.selector))
+        return;
       const conductor = new ConductorClass(entry.selector);
-      conductor.mounted = !0, this.loaded[entry.conductor] = conductor;
+      conductor.mounted = !0;
+      try {
+        (_a = conductor.mount) == null || _a.call(conductor);
+      } catch (error) {
+        throw conductor.mounted = !1, error;
+      }
+      this.loaded[entry.conductor] = conductor;
     }).catch((error) => {
       console.error(`Booster Pack: failed to load conductor ${entry.conductor}.`, error);
     }).finally(() => {
-      delete this.loading[entry.conductor];
+      this.loading.delete(entry.conductor);
     });
   }
 }
