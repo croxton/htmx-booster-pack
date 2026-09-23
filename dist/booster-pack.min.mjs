@@ -257,7 +257,9 @@ const event = (selector = null, requirement) => new Promise((resolve) => {
     }, onEvent = (event2) => {
       cleanup(), resolve();
     };
-    window.addEventListener(topic, onEvent);
+    window.addEventListener(topic, () => {
+      resolve();
+    }, { once: !0 });
     const onDetach = (event2) => {
       event2.detail.selector === selector && (cleanup(), resolve(!1));
     };
