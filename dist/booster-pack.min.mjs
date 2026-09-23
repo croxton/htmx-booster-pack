@@ -347,6 +347,16 @@ class BoosterFactory extends Booster {
       }
     this.config.basePath = this.config.basePath.replace(/^\/|\/$/g, ""), this.mount();
   }
+  /**
+   * Discover and lazy-load component placeholders in the current swap target.
+   *
+   * Finds elements within the active htmx target that use this extension's
+   * data attribute, then passes each matching element to `lazyload()`.
+   * Components outside the current target are intentionally ignored so they
+   * can remain mounted across swaps.
+   *
+   * @returns {void}
+   */
   mount() {
     const target = this._getTarget();
     if (!target)
@@ -355,6 +365,15 @@ class BoosterFactory extends Booster {
     for (const el of components)
       this.lazyload(el);
   }
+  /**
+   * Run pre-unmount lifecycle hooks for components inside the current swap target.
+   *
+   * Before htmx swaps content out of the document, this calls each affected
+   * component's optional `beforeUnmount()` hook. This gives components a chance
+   * to perform DOM-dependent cleanup while their elements are still present.
+   *
+   * @returns {void}
+   */
   beforeUnmount() {
     var _a, _b;
     const target = this._getTarget();
@@ -364,6 +383,19 @@ class BoosterFactory extends Booster {
         this._isWithinTarget(target, loadedComponent.selector) && ((_b = (_a = loadedComponent.instance).beforeUnmount) == null || _b.call(_a));
       }
   }
+  /**
+   * Unmount components affected by the current htmx swap target.
+   *
+   * Calls each mounted component's `unmount()` lifecycle hook when its
+   * element is either inside the current swap target or no longer present
+   * in the document. Matching mounted components are removed from the
+   * loaded registry and a `booster:detached` event is published.
+   *
+   * Also publishes `booster:detached` for components that were still
+   * waiting on a loading strategy when they became detached.
+   *
+   * @returns {void}
+   */
   unmount() {
     var _a, _b;
     const target = this._getTarget();
@@ -396,28 +428,22 @@ class BoosterFactory extends Booster {
     window.dispatchEvent(event2);
   }
   /**
-   * Import a component on demand, optionally using a loading strategy
+   * Load and mount a component for the given DOM element.
    *
-   * @param el
+   * Reads the component name, loading strategy, and cache-busting version
+   * from the element's data attributes. The component module is imported
+   * only after all configured loading strategies have resolved.
+   *
+   * Duplicate loads are prevented by checking both mounted and in-progress
+   * component selectors.
+   *
+   * @param {HTMLElement} el The element with the data attribute for this Booster extension.
+   * @returns {void}
    */
   lazyload(el) {
-    const component = el.dataset[this.extension], version = el.dataset.version ?? "1", strategy = el.dataset.load ?? null, id = el.getAttribute("id");
-    if (!component) {
-      console.warn(`Booster Pack: missing component name for data-${this.extension}. Skipping.`);
+    const component = el.dataset[this.extension], id = el.getAttribute("id"), strategy = el.dataset.load ?? null, version = el.dataset.version ?? "1";
+    if (!this._isValidComponent(component, id, strategy, version))
       return;
-    }
-    if (!/^[A-Za-z0-9]+$/.test(component)) {
-      console.warn(`Booster Pack: invalid component name "${component}". Skipping.`);
-      return;
-    }
-    if (!/^[A-Za-z0-9]+$/.test(version)) {
-      console.warn(`Booster Pack: invalid version string for "${component}". Skipping.`);
-      return;
-    }
-    if (!id) {
-      console.warn(`Booster Pack: an instance of ${component} doesn't have an ID attribute. Skipping.`);
-      return;
-    }
     const selector = `#${CSS.escape(id)}`;
     if (this.loaded.some((item) => item.selector === selector) || this.loading.includes(selector))
       return;
@@ -432,22 +458,8 @@ class BoosterFactory extends Booster {
         url.href
       );
     }).then((lazyComponent) => {
-      var _a;
-      if (!lazyComponent)
-        return;
-      const ComponentClass = lazyComponent.default;
-      if (typeof ComponentClass != "function")
-        throw new TypeError(`Booster Pack: component ${component} does not export a default class.`);
-      if (!document.querySelector(selector))
-        return;
-      const instance = new ComponentClass(selector);
-      instance.mounted = !0;
-      try {
-        (_a = instance.mount) == null || _a.call(instance);
-      } catch (error) {
-        throw instance.mounted = !1, error;
-      }
-      this.loaded.push({
+      const instance = this.mountComponent(lazyComponent, component, selector);
+      instance && this.loaded.push({
         name: component,
         selector,
         instance
@@ -457,6 +469,44 @@ class BoosterFactory extends Booster {
     }).finally(() => {
       this.loading = this.loading.filter((item) => item !== selector);
     });
+  }
+  /**
+   * Mount a dynamically imported component instance.
+   *
+   * @param {object|null} module The imported component module.
+   * @param {string} component The component name, used for error messages.
+   * @param {string} selector The selector for the component element.
+   * @returns {object|false} The mounted component instance, or false when it cannot be mounted.
+   */
+  mountComponent(module, component, selector) {
+    var _a;
+    if (!module)
+      return !1;
+    const ComponentClass = module.default;
+    if (typeof ComponentClass != "function")
+      throw new TypeError(`Booster Pack: component ${component} does not export a default class.`);
+    if (!document.querySelector(selector))
+      return !1;
+    const instance = new ComponentClass(selector);
+    instance.mounted = !0;
+    try {
+      (_a = instance.mount) == null || _a.call(instance);
+    } catch (error) {
+      throw instance.mounted = !1, error;
+    }
+    return instance;
+  }
+  /**
+   * Validate component metadata before attempting to load it.
+   *
+   * @param {string|null|undefined} component The component name from the data attribute.
+   * @param {string|null|undefined} id The ID of the DOM element the component is attached to.
+   * @param {string|null} [strategy=''] The optional loading strategy, e.g. "idle", "visible", or "idle | media (min-width: 1024px)".
+   * @param {string} [version='1'] The optional alphanumeric version string used for cache busting.
+   * @returns {boolean} True when the component metadata is valid; otherwise false.
+   */
+  _isValidComponent(component, id, strategy = "", version = "1") {
+    return component ? /^[A-Za-z0-9]+$/.test(component) ? id ? strategy && !/^(?:eager|immediate|idle|event\s*\([^)]*\)|media\s*\([^)]*\)|visible(?:\s*\([^)]*\))?)(?:\s*\|\s*(?:eager|immediate|idle|event\s*\([^)]*\)|media\s*\([^)]*\)|visible(?:\s*\([^)]*\))?))*$/.test(strategy) ? (console.warn(`Booster Pack: invalid loading strategy for ${component}. Skipping.`), !1) : /^[A-Za-z0-9]+$/.test(version) ? !0 : (console.warn(`Booster Pack: invalid version string for "${component}". Skipping.`), !1) : (console.warn(`Booster Pack: an instance of ${component} doesn't have an ID attribute. Skipping.`), !1) : (console.warn(`Booster Pack: invalid component name "${component}". Skipping.`), !1) : (console.warn(`Booster Pack: missing component name for data-${this.extension}. Skipping.`), !1);
   }
   /**
    * Get the current swap target
