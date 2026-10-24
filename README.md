@@ -41,7 +41,7 @@ A core tenet of htmx is to inline implementation details, so that the behaviour 
 
 1. Include `booster.min.js` in the `<head>` of your page, right after `htmx`:
 ```html
-<script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@2.0.10/src/htmx.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/bigskysoftware/htmx@2.0.11/src/htmx.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/gh/croxton/htmx-booster-pack@1.2.0/dist/booster.min.js"></script>
 ```
 
