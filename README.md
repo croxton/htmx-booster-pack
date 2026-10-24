@@ -249,7 +249,7 @@ refresh() {
 }
 ````
 
-The `Booster` base class also provides methods for storing and retrieving data that is specific to a component instance, that can be shared across all instances of the same class, or across all components globally:
+The `Booster` base class also provides methods for storing and retrieving data that is specific to a component instance, that can be shared across all instances of a given component, or across all components globally:
 
 #### setState(scope, changes)
 Method called to update state. Only changes of state are required to be passed in a form of an object, and these will be merged with current state. Objects stored in state can be scoped as follows:
@@ -389,7 +389,7 @@ The default strategy if not specified. If the component is present in the page o
 
 
 #### Event
-Components can listen for an event on `document.body` to be triggered before they are loaded. Pass the event name in parentheses.
+Components can listen for an event on `window` to be triggered before they are loaded. Pass the event name in parentheses.
 
 ```html
 <div id="my-thing-1" data-booster="myThing" data-load="event (htmx:validation:validate)"></div>
@@ -510,7 +510,7 @@ new BoosterExt(MyCustomFactory, 'custom-booster');
   
 ```
 
-You can get creative with the types of component Booster Pack makes. Here's an example of a [custom factory](https://github.com/croxton/craftcms-hda-starter-kit/blob/main/src/scripts/framework/factory.js) that also makes Vue SFCs.
+You can get creative with the types of component Booster Pack makes. Here's an example of a [custom factory](https://github.com/croxton/craftcms-hda-starter-kit/blob/main/src/scripts/framework/componentFactory.js) that also makes Vue SFCs.
 
 ### Custom conductor factory
 
